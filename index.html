@@ -1503,7 +1503,7 @@ function makeConfirmLink(recordId,action){
   // Extract bot username from token — we use a data payload encoded in start param
   const payload=btoa(JSON.stringify({id:recordId,a:action,ts:Date.now()})).replace(/=/g,'');
   // We'll use a self-contained confirm page embedded in the same HTML via hash
-  const base=window.location.href.split('#')[0].split('?')[0];
+  const base='https://mdvxdmitry.github.io/masters-crm/';
   return base+'?confirm='+recordId+'&action='+action+'&payload='+payload;
 }
 
