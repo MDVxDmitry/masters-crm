@@ -1497,24 +1497,20 @@ async function sendTelegramMessage(text){
   }catch(e){console.warn('TG error',e)}
 }
 
-// Generate confirmation link using Telegram bot deep link
-function makeConfirmLink(recordId,action){
-  const{token}=getTgSettings();
-  // Extract bot username from token — we use a data payload encoded in start param
-  const payload=btoa(JSON.stringify({id:recordId,a:action,ts:Date.now()})).replace(/=/g,'');
-  // We'll use a self-contained confirm page embedded in the same HTML via hash
-  const base='https://mdvxdmitry.github.io/masters-crm/';
-  return base+'?confirm='+recordId+'&action='+action+'&payload='+payload;
+// Generate confirmation link — Telegram bot deep link
+function makeConfirmLink(recordId){
+  // Encode record ID into start payload for the bot
+  const payload=recordId.replace(/[^a-zA-Z0-9_-]/g,'');
+  return`https://t.me/manicure_crm_bot?start=confirm_${payload}`;
 }
 
-// Send WhatsApp reminder with confirmation link
+// Send SMS reminder with Telegram confirmation link
 window.sendConfirmReminder=function(recId){
   const r=getItem('records',recId);
   if(!r){showToast('⚠️ Запись не найдена');return}
   if(!r.phone){showToast('⚠️ У клиента нет телефона');return}
 
-  const confirmLink=makeConfirmLink(recId,'confirm');
-  const cancelLink=makeConfirmLink(recId,'cancel');
+  const confirmLink=makeConfirmLink(recId);
   const dateStr=fmtDate(r.date);
   const svcName=r.service||'процедуру';
 
@@ -1525,101 +1521,127 @@ window.sendConfirmReminder=function(recId){
   showToast('📱 СМС открыт!');
 };
 
-// Check URL params for confirmation (client side)
-function checkConfirmationParams(){
-  const params=new URLSearchParams(window.location.search);
-  const recId=params.get('confirm');
-  const action=params.get('action');
-  if(!recId||!action)return;
+// ── BOT POLLING: получаем подтверждения от клиентов через бота ──
+let pollingOffset=parseInt(localStorage.getItem('mcrm_tg_offset')||'0');
 
-  // Show confirmation UI overlay
-  showConfirmPage(recId,action);
+async function pollTelegramUpdates(){
+  const{token}=getTgSettings();
+  if(!token)return;
+  try{
+    const r=await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${pollingOffset}&timeout=5`);
+    const d=await r.json();
+    if(!d.ok||!d.result.length)return;
+    for(const upd of d.result){
+      pollingOffset=upd.update_id+1;
+      localStorage.setItem('mcrm_tg_offset',pollingOffset);
+      const msg=upd.message;
+      if(!msg||!msg.text)continue;
+      const text=msg.text;
+      // Client sent /start confirm_RECORDID
+      const m=text.match(/\/start confirm_(.+)/);
+      if(!m)continue;
+      const recId=m[1];
+      const r=getItem('records',recId);
+      if(!r)continue;
+      const clientChatId=msg.chat.id;
+      const clientName=msg.from.first_name||r.name;
+      // Send inline keyboard to client
+      await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          chat_id:clientChatId,
+          text:`Подтвердите вашу запись:\n\n${r.service}\n${fmtDate(r.date)} в ${r.time||'—'}`,
+          reply_markup:{inline_keyboard:[[
+            {text:'✅ Подтверждаю',callback_data:`confirm_${recId}`}
+          ]]}
+        })
+      });
+    }
+    // Handle callback_query (button press)
+  }catch(e){}
 }
 
-function showConfirmPage(recId,action){
-  const r=getItem('records',recId);
-  const overlay=document.createElement('div');
-  overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:var(--surface);display:flex;align-items:center;justify-content:center;padding:20px;font-family:Nunito,sans-serif;';
+async function pollCallbacks(){
+  const{token,chatId}=getTgSettings();
+  if(!token)return;
+  try{
+    const r=await fetch(`https://api.telegram.org/bot${token}/getUpdates?offset=${pollingOffset}&timeout=5`);
+    const d=await r.json();
+    if(!d.ok||!d.result.length)return;
+    for(const upd of d.result){
+      pollingOffset=upd.update_id+1;
+      localStorage.setItem('mcrm_tg_offset',pollingOffset);
 
-  if(!r){
-    overlay.innerHTML=`<div class="confirm-card"><div class="confirm-logo">❓</div><div class="confirm-title">Запись не найдена</div><div class="confirm-sub">Возможно, запись была удалена или ссылка устарела</div></div>`;
-    document.body.appendChild(overlay);
-    return;
-  }
+      // Handle /start confirm_ID
+      if(upd.message&&upd.message.text){
+        const text=upd.message.text;
+        const m=text.match(/\/start confirm_(.+)/);
+        if(m){
+          const recId=m[1];
+          const rec=getItem('records',recId);
+          const clientChatId=upd.message.chat.id;
+          if(rec){
+            await fetch(`https://api.telegram.org/bot${token}/sendMessage`,{
+              method:'POST',headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({
+                chat_id:clientChatId,
+                text:`Здравствуйте! Подтвердите вашу запись:\n\n💅 ${rec.service}\n📅 ${fmtDate(rec.date)} в ${rec.time||'—'}`,
+                reply_markup:{inline_keyboard:[[
+                  {text:'✅ Подтверждаю',callback_data:`confirm_${recId}`}
+                ]]}
+              })
+            });
+          }
+        }
+      }
 
-  const already=r.confirmed===action;
-  if(already){
-    overlay.innerHTML=`<div class="confirm-card"><div class="confirm-logo">${action==='confirm'?'✅':'❌'}</div><div class="confirm-title">${action==='confirm'?'Уже подтверждено':'Уже отменено'}</div><div class="confirm-sub">Вы уже ${action==='confirm'?'подтвердили':'отменили'} эту запись ранее</div></div>`;
-    document.body.appendChild(overlay);
-    return;
-  }
-
-  const isConfirm=action==='confirm';
-  overlay.innerHTML=`
-    <div class="confirm-card">
-      <div class="confirm-logo">${isConfirm?'📅':'❌'}</div>
-      <div class="confirm-title">${isConfirm?'Подтвердите запись':'Отменить запись?'}</div>
-      <div class="confirm-sub">${isConfirm?'Нажмите кнопку, чтобы подтвердить ваш визит':'Нажмите кнопку для отмены записи'}</div>
-      <div style="background:var(--surface2);border-radius:16px;padding:14px;margin-bottom:4px;text-align:left">
-        <div class="confirm-info-row">
-          <div class="confirm-info-icon"><i class="fas fa-calendar"></i></div>
-          <div><div class="confirm-info-text">${fmtDate(r.date)}</div><div class="confirm-info-sub">${r.time||'Время не указано'}</div></div>
-        </div>
-        <div class="confirm-info-row">
-          <div class="confirm-info-icon"><i class="fas fa-scissors"></i></div>
-          <div><div class="confirm-info-text">${r.service||'—'}</div><div class="confirm-info-sub">${r.price?r.price.toLocaleString()+' ₽':''}</div></div>
-        </div>
-        <div class="confirm-info-row">
-          <div class="confirm-info-icon"><i class="fas fa-user"></i></div>
-          <div><div class="confirm-info-text">${r.name}</div></div>
-        </div>
-      </div>
-      <button class="btn-confirm" id="do-confirm-btn">Подтверждаю запись</button>
-      <div id="confirm-result" style="display:none;margin-top:16px;font-size:14px;font-weight:700;color:var(--green);text-align:center"></div>
-    </div>`;
-
-  document.body.appendChild(overlay);
-
-  document.getElementById('do-confirm-btn').onclick=async function(){
-    this.disabled=true;
-    this.textContent='⏳ Отправляем...';
-
-    // Save confirmation to record
-    updateItem('records',recId,{confirmed:action,confirmedAt:new Date().toISOString()});
-
-    // Save message to inbox
-    const msgData={
-      id:DB.id(),
-      recId,
-      name:r.name,
-      action,
-      service:r.service,
-      date:r.date,
-      time:r.time,
-      ts:new Date().toISOString(),
-      read:false
-    };
-    const msgs=DB.get('inbox');msgs.unshift(msgData);
-    if(msgs.length>50)msgs.splice(50);
-    DB.set('inbox',msgs);
-    updateMsgBadge();
-
-    // Send Telegram notification
-    const emoji=isConfirm?'✅':'❌';
-    const txt=`${emoji} <b>${r.name}</b> ${isConfirm?'подтвердил(а)':'отменил(а)'} запись\n\n📅 ${fmtDate(r.date)} в ${r.time||'—'}\n💅 ${r.service}\n📱 ${r.phone||'—'}`;
-    await sendTelegramMessage(txt);
-
-    // Show result
-    const res=document.getElementById('confirm-result');
-    res.style.display='block';
-    res.style.color=isConfirm?'var(--green)':'var(--red)';
-    res.textContent=isConfirm?'🎉 Запись подтверждена! Ждём вас!':'Запись отменена. Если передумаете — напишите мастеру.';
-    this.style.display='none';
-
-    // Clean URL
-    window.history.replaceState({},'',window.location.pathname);
-  };
+      // Handle button press
+      if(upd.callback_query){
+        const cb=upd.callback_query;
+        const cm=cb.data&&cb.data.match(/^confirm_(.+)/);
+        if(cm){
+          const recId=cm[1];
+          const rec=getItem('records',recId);
+          // Answer callback
+          await fetch(`https://api.telegram.org/bot${token}/answerCallbackQuery`,{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({callback_query_id:cb.id,text:'Запись подтверждена!'})
+          });
+          // Edit message
+          await fetch(`https://api.telegram.org/bot${token}/editMessageText`,{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({
+              chat_id:cb.message.chat.id,
+              message_id:cb.message.message_id,
+              text:`✅ Запись подтверждена!\n\n💅 ${rec?rec.service:''}\n📅 ${rec?fmtDate(rec.date):''} в ${rec?rec.time||'—':''}\n\nДо встречи!`
+            })
+          });
+          if(rec){
+            // Mark confirmed in CRM
+            updateItem('records',recId,{confirmed:'confirm',confirmedAt:new Date().toISOString()});
+            // Add to inbox
+            const msgData={id:DB.id(),recId,name:rec.name,action:'confirm',service:rec.service,date:rec.date,time:rec.time,ts:new Date().toISOString(),read:false};
+            const msgs=DB.get('inbox');msgs.unshift(msgData);if(msgs.length>50)msgs.splice(50);DB.set('inbox',msgs);
+            updateMsgBadge();
+            // Notify master
+            await sendTelegramMessage(`✅ <b>${rec.name}</b> подтвердил(а) запись\n\n📅 ${fmtDate(rec.date)} в ${rec.time||'—'}\n💅 ${rec.service}\n📱 ${rec.phone||'—'}`);
+          }
+        }
+      }
+    }
+  }catch(e){}
 }
+
+// Start polling every 5 seconds while app is open
+function startPolling(){
+  pollCallbacks();
+  setInterval(pollCallbacks,5000);
+}
+
+// Check URL params for confirmation (client side) — оставлено для совместимости
+function checkConfirmationParams(){}
+
+function showConfirmPage(){}
 
 // Render messages inbox
 function renderMessages(){
@@ -1627,13 +1649,12 @@ function renderMessages(){
   const msgs=DB.get('inbox');
   if(!msgs.length){el.innerHTML='<div class="empty"><i class="fas fa-bell"></i><p>Уведомлений пока нет</p></div>';return}
   el.innerHTML=msgs.map(m=>{
-    const isConfirm=m.action==='confirm';
     const time=m.ts?new Date(m.ts).toLocaleString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}):'';
     return`<div class="msg-item">
-      <div class="msg-av ${isConfirm?'confirmed':'cancelled'}">${isConfirm?'✅':'❌'}</div>
+      <div class="msg-av confirmed">✅</div>
       <div class="msg-body">
         <div class="msg-name">${m.name}</div>
-        <div class="msg-text">${isConfirm?'Подтвердил(а)':'Отменил(а)'} запись: ${m.service||'—'}, ${fmtDate(m.date)} в ${m.time||'—'}</div>
+        <div class="msg-text">Подтвердил(а) запись: ${m.service||'—'}, ${fmtDate(m.date)} в ${m.time||'—'}</div>
         <div class="msg-time">${time}</div>
       </div>
       ${!m.read?'<div class="msg-unread-dot"></div>':''}
@@ -1652,6 +1673,7 @@ function updateMsgBadge(){
   const msgs=DB.get('inbox');
   const unread=msgs.filter(m=>!m.read).length;
   const badge=document.getElementById('msg-nav-badge');
+
   if(!badge)return;
   if(unread>0){badge.style.display='flex';badge.textContent=unread>9?'9+':unread}
   else badge.style.display='none';
@@ -1663,6 +1685,7 @@ function updateMsgBadge(){
 initApp();
 checkConfirmationParams();
 updateMsgBadge();
+startPolling();
 </script>
 </body>
 </html>
