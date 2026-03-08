@@ -49,11 +49,11 @@ body{font-family:'Nunito',sans-serif;background:var(--surface);color:var(--text)
 
 /* ── NAV ── */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-height);background:var(--card);border-top:1px solid var(--border);display:flex;align-items:flex-start;padding-top:8px;z-index:1000;box-shadow:0 -2px 16px rgba(0,0,0,.15)}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-muted);font-size:10px;font-weight:700;cursor:pointer;border:none;background:none;font-family:'Nunito',sans-serif;padding:0;transition:var(--tr)}
-.nav-item .nav-pill{width:56px;height:30px;border-radius:100px;display:flex;align-items:center;justify-content:center;transition:var(--tr)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text-muted);font-size:9px;font-weight:700;cursor:pointer;border:none;background:none;font-family:'Nunito',sans-serif;padding:0;transition:var(--tr)}
+.nav-item .nav-pill{width:46px;height:28px;border-radius:100px;display:flex;align-items:center;justify-content:center;transition:var(--tr)}
 .nav-item.active .nav-pill{background:var(--primary-light)}
 .nav-item.active{color:var(--primary)}
-.nav-item i{font-size:19px}
+.nav-item i{font-size:16px}
 
 /* ── PAGES ── */
 .page{display:none;padding:14px 14px 6px;animation:pageIn .25s ease}
@@ -588,6 +588,7 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
     <button class="nav-item" id="nav-cal" onclick="nav('cal',this)"><div class="nav-pill"><i class="fas fa-calendar-alt"></i></div><span>График</span></button>
     <button class="nav-item" id="nav-add" onclick="nav('add',this)"><div class="nav-pill"><i class="fas fa-plus"></i></div><span>Записать</span></button>
     <button class="nav-item" id="nav-clients" onclick="nav('clients',this)"><div class="nav-pill"><i class="fas fa-users"></i></div><span>Клиенты</span></button>
+    <button class="nav-item" id="nav-fin" onclick="nav('fin',this)"><div class="nav-pill"><i class="fas fa-chart-line"></i></div><span>Финансы</span></button>
     <button class="nav-item" id="nav-msg" onclick="nav('msg',this)" style="position:relative"><div class="nav-pill"><i class="fas fa-bell"></i></div><span>Сообщения</span><span class="nav-badge" id="msg-nav-badge" style="display:none">0</span></button>
     <button class="nav-item" id="nav-set" onclick="nav('set',this)"><div class="nav-pill"><i class="fas fa-cog"></i></div><span>Настройки</span></button>
   </nav>
@@ -1501,23 +1502,13 @@ async function sendTelegramMessage(text){
   }catch(e){console.warn('TG error',e)}
 }
 
-// Generate short confirmation link — only essential data
+// Generate shortest possible confirmation link
 function makeConfirmLink(recordId){
   const r=getItem('records',recordId);
   if(!r)return'';
-  // Only encode the minimum needed: id, name, service, date, time, phone
-  // Use short keys to minimize size
-  const payload=[
-    recordId,
-    r.name||'',
-    r.service||'',
-    r.date||'',
-    r.time||'',
-    r.phone||'',
-    r.price||0
-  ].join('|');
-  // Use URL-safe base64
-  const encoded=btoa(unescape(encodeURIComponent(payload))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  // Minimal data: id~date~time~service~price
+  const raw=`${recordId}~${r.date||''}~${r.time||''}~${r.service||''}~${r.price||0}~${r.name||''}~${r.phone||''}`;
+  const encoded=btoa(unescape(encodeURIComponent(raw))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
   return`https://mdvxdmitry.github.io/masters-crm/?c=${encoded}`;
 }
 
@@ -1542,15 +1533,15 @@ function checkConfirmationParams(){
   window.history.replaceState({},'',window.location.pathname);
   try{
     const decoded=decodeURIComponent(escape(atob(encoded.replace(/-/g,'+').replace(/_/g,'/'))));
-    const parts=decoded.split('|');
+    const parts=decoded.split('~');
     const payload={
       id:parts[0],
-      name:parts[1],
-      service:parts[2],
-      date:parts[3],
-      time:parts[4],
-      phone:parts[5],
-      price:Number(parts[6])||0
+      date:parts[1],
+      time:parts[2],
+      service:parts[3],
+      price:Number(parts[4])||0,
+      name:parts[5],
+      phone:parts[6]
     };
     showConfirmPage(payload);
   }catch(e){
