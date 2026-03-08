@@ -800,16 +800,6 @@ window.renderDayRecords=function(dateStr){
   const tabs=document.createElement('div');tabs.className='day-tabs';
   tabs.innerHTML=`<button class="day-tab active" onclick="filterDay('${dateStr}','all',this)">Все (${records.length})</button><button class="day-tab" onclick="filterDay('${dateStr}','wait',this)">⏳ Ожидает</button><button class="day-tab" onclick="filterDay('${dateStr}','done',this)">✅ Пришёл</button><button class="day-tab" onclick="filterDay('${dateStr}','cancel',this)">❌ Отменил</button>`;
   container.appendChild(tabs);
-  // Add record button
-  const addBtn=document.createElement('button');
-  addBtn.className='btn-p';addBtn.style.marginBottom='10px';
-  addBtn.innerHTML='<i class="fas fa-plus"></i> Создать запись на этот день';
-  addBtn.onclick=function(){
-    const navAddBtn=document.getElementById('nav-add');
-    nav('add',navAddBtn);
-    setTimeout(()=>{document.getElementById('f-date').value=dateStr;},50);
-  };
-  container.appendChild(addBtn);
   if(!records.length){container.innerHTML+='<div class="empty"><i class="fas fa-calendar"></i><p>Нет записей на этот день</p></div>';return}
   const listDiv=document.createElement('div');listDiv.id='day-list';container.appendChild(listDiv);
   renderRecCards(records,listDiv,tpl,dateStr);
@@ -1511,22 +1501,24 @@ async function sendTelegramMessage(text){
   }catch(e){console.warn('TG error',e)}
 }
 
-// Generate confirmation link — record data encoded directly in URL
+// Generate short confirmation link — only essential data
 function makeConfirmLink(recordId){
   const r=getItem('records',recordId);
   if(!r)return'';
-  // Encode key record data into the URL so client device doesn't need localStorage
-  const payload={
-    id:recordId,
-    name:r.name,
-    service:r.service||'',
-    date:r.date||'',
-    time:r.time||'',
-    price:r.price||0,
-    phone:r.phone||''
-  };
-  const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-  return`https://mdvxdmitry.github.io/masters-crm/?crm_confirm=${encoded}`;
+  // Only encode the minimum needed: id, name, service, date, time, phone
+  // Use short keys to minimize size
+  const payload=[
+    recordId,
+    r.name||'',
+    r.service||'',
+    r.date||'',
+    r.time||'',
+    r.phone||'',
+    r.price||0
+  ].join('|');
+  // Use URL-safe base64
+  const encoded=btoa(unescape(encodeURIComponent(payload))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+  return`https://mdvxdmitry.github.io/masters-crm/?c=${encoded}`;
 }
 
 // Send SMS reminder with website confirmation link
@@ -1545,12 +1537,21 @@ window.sendConfirmReminder=function(recId){
 // Check URL params — runs when client opens the link on THEIR device
 function checkConfirmationParams(){
   const params=new URLSearchParams(window.location.search);
-  const encoded=params.get('crm_confirm');
+  const encoded=params.get('c');
   if(!encoded)return;
-  // Clean URL immediately
   window.history.replaceState({},'',window.location.pathname);
   try{
-    const payload=JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    const decoded=decodeURIComponent(escape(atob(encoded.replace(/-/g,'+').replace(/_/g,'/'))));
+    const parts=decoded.split('|');
+    const payload={
+      id:parts[0],
+      name:parts[1],
+      service:parts[2],
+      date:parts[3],
+      time:parts[4],
+      phone:parts[5],
+      price:Number(parts[6])||0
+    };
     showConfirmPage(payload);
   }catch(e){
     showConfirmPageError();
