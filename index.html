@@ -42,26 +42,8 @@ body.light {
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{font-family:'Nunito',sans-serif;background:var(--surface);color:var(--text);margin:0;padding-bottom:var(--nav-height);transition:background .35s,color .35s;overflow-x:hidden;min-height:100vh}
 
-/* AUTH */
-#auth-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:var(--surface)}
-.auth-logo{font-size:64px;margin-bottom:8px}
-.auth-title{font-size:28px;font-weight:900;color:var(--primary);margin-bottom:4px}
-.auth-sub{font-size:14px;color:var(--text-muted);margin-bottom:32px}
-.auth-card{background:var(--card);border-radius:var(--radius);padding:28px 24px;width:100%;max-width:400px;border:1px solid var(--border);box-shadow:var(--shadow)}
-.auth-tabs{display:flex;margin-bottom:24px;background:var(--surface2);border-radius:100px;padding:4px;gap:0}
-.auth-tab{flex:1;padding:10px;border-radius:100px;border:none;background:none;color:var(--text-muted);font-weight:800;font-size:14px;cursor:pointer;font-family:'Nunito',sans-serif;transition:var(--transition)}
-.auth-tab.active{background:var(--primary-btn);color:#fff}
-.auth-error{background:var(--red-bg);color:var(--red);padding:10px 14px;border-radius:12px;font-size:13px;font-weight:700;margin-bottom:12px;display:none}
-.auth-divider{text-align:center;color:var(--text-muted);font-size:12px;margin:14px 0;position:relative}
-.auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--border)}
-.auth-divider::before{left:0}.auth-divider::after{right:0}
-.btn-google{background:#fff;color:#333;border:1.5px solid var(--border);padding:14px;border-radius:100px;font-weight:800;font-size:15px;width:100%;cursor:pointer;font-family:'Nunito',sans-serif;display:flex;align-items:center;justify-content:center;gap:10px;transition:var(--transition)}
-.btn-google:active{transform:scale(0.97)}
-.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:#fff;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
 /* APP */
-#app-shell{display:none}
+#app-shell{display:block}
 .page{display:none;padding:16px 16px 8px}
 .page.active{display:block;animation:pageIn .3s cubic-bezier(.4,0,.2,1)}
 @keyframes pageIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
@@ -71,7 +53,6 @@ body{font-family:'Nunito',sans-serif;background:var(--surface);color:var(--text)
 .app-logo{font-size:18px;font-weight:900;color:var(--primary);display:flex;align-items:center;gap:8px}
 .header-right{display:flex;align-items:center;gap:8px}
 .total-chip{background:var(--primary-light);color:var(--primary);padding:6px 14px;border-radius:100px;font-weight:800;font-size:14px}
-.user-avatar{width:34px;height:34px;border-radius:50%;background:var(--primary-btn);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;cursor:pointer;flex-shrink:0}
 
 /* CARD */
 .card{background:var(--card);border-radius:var(--radius);padding:20px;margin-bottom:14px;border:1px solid var(--border);box-shadow:var(--shadow);transition:var(--transition);position:relative;overflow:hidden}
@@ -265,46 +246,12 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 </head>
 <body>
 
-<!-- AUTH -->
-<div id="auth-screen">
-  <div class="auth-logo">✂️</div>
-  <div class="auth-title">Masters CRM</div>
-  <div class="auth-sub">Войдите, чтобы продолжить</div>
-  <div class="auth-card">
-    <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Войти</button>
-      <button class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Регистрация</button>
-    </div>
-    <div class="auth-error" id="auth-error"></div>
-    <div id="login-form">
-      <div class="input-group"><label>Email</label><input type="email" id="login-email" placeholder="your@email.com" autocomplete="email"></div>
-      <div class="input-group"><label>Пароль</label><input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password"></div>
-      <button class="btn-primary" onclick="doLogin()" id="btn-login"><i class="fas fa-sign-in-alt"></i> Войти</button>
-      <div style="text-align:center;margin-top:12px;">
-        <button onclick="doResetPassword()" style="background:none;border:none;color:var(--primary);font-size:13px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif;">Забыли пароль?</button>
-      </div>
-    </div>
-    <div id="register-form" style="display:none">
-      <div class="input-group"><label>Имя</label><input type="text" id="reg-name" placeholder="Как вас зовут?"></div>
-      <div class="input-group"><label>Email</label><input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email"></div>
-      <div class="input-group"><label>Пароль</label><input type="password" id="reg-pass" placeholder="Минимум 6 символов" autocomplete="new-password"></div>
-      <button class="btn-primary" onclick="doRegister()" id="btn-register"><i class="fas fa-user-plus"></i> Создать аккаунт</button>
-    </div>
-    <div class="auth-divider">или</div>
-    <button class="btn-google" onclick="doGoogleLogin()">
-      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.36-8.16 2.36-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-      Войти через Google
-    </button>
-  </div>
-</div>
-
 <!-- APP -->
 <div id="app-shell">
   <header class="app-header">
     <div class="app-logo"><i class="fas fa-scissors"></i> MASTERS CRM</div>
     <div class="header-right">
       <div class="total-chip" id="quick-total">0 ₽</div>
-      <div class="user-avatar" id="user-avatar" onclick="openUserMenu()">?</div>
     </div>
   </header>
 
@@ -400,16 +347,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 
   <div id="page-set" class="page">
     <div class="card">
-      <div class="section-title">Аккаунт</div>
-      <div class="setting-row">
-        <div class="setting-label"><i class="fas fa-user"></i><span id="set-user-email">—</span></div>
-      </div>
-      <div class="setting-row" onclick="doLogout()">
-        <div class="setting-label"><i class="fas fa-sign-out-alt"></i> Выйти из аккаунта</div>
-        <i class="fas fa-chevron-right" style="color:var(--text-muted)"></i>
-      </div>
-    </div>
-    <div class="card">
       <div class="section-title">Внешний вид</div>
       <div class="setting-row" onclick="toggleTheme()">
         <div class="setting-label"><i class="fas fa-sun"></i> Светлая тема</div>
@@ -439,6 +376,17 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <p style="font-size:12px;color:var(--text-muted);margin:0 0 8px;">Переменные: <span class="chip">{name}</span> <span class="chip">{service}</span> <span class="chip">{date}</span> <span class="chip">{time}</span></p>
       <div class="input-group"><textarea id="f-tpl" rows="3"></textarea></div>
       <button class="btn-primary" onclick="saveTpl()"><i class="fas fa-save"></i> Сохранить шаблон</button>
+    </div>
+    <div class="card">
+      <div class="section-title">Данные</div>
+      <div class="setting-row" onclick="exportData()">
+        <div class="setting-label"><i class="fas fa-download"></i> Экспорт данных (JSON)</div>
+        <i class="fas fa-chevron-right" style="color:var(--text-muted)"></i>
+      </div>
+      <div class="setting-row" onclick="clearAllData()">
+        <div class="setting-label" style="color:var(--red)"><i class="fas fa-trash" style="color:var(--red)"></i> Очистить все данные</div>
+        <i class="fas fa-chevron-right" style="color:var(--text-muted)"></i>
+      </div>
     </div>
   </div>
 
@@ -505,245 +453,195 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
-<!-- USER MODAL -->
-<div class="modal-overlay" id="userModal">
-  <div class="modal-sheet">
-    <div class="sheet-handle"></div>
-    <div class="sheet-title">Аккаунт</div>
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;background:var(--surface2);padding:16px;border-radius:16px;">
-      <div class="user-avatar" style="width:52px;height:52px;font-size:20px;cursor:default;" id="user-modal-avatar">?</div>
-      <div>
-        <div style="font-weight:900;font-size:16px;" id="user-modal-name">—</div>
-        <div style="font-size:13px;color:var(--text-muted);" id="user-modal-email">—</div>
-      </div>
-    </div>
-    <button class="btn-primary" style="background:var(--red-bg);color:var(--red);box-shadow:none;" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Выйти</button>
-    <button class="btn-secondary" onclick="closeModal('userModal')" style="width:100%;margin-top:8px;justify-content:center;"><i class="fas fa-times"></i> Закрыть</button>
-  </div>
-</div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
-<script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,sendPasswordResetEmail,GoogleAuthProvider,signInWithPopup,updateProfile}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import{getFirestore,collection,doc,addDoc,setDoc,getDoc,getDocs,deleteDoc,updateDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+<script>
+// ── LOCAL STORAGE DB ──
+const DB = {
+  get: (key) => { try { return JSON.parse(localStorage.getItem('mcrm_' + key) || '[]'); } catch(e){ return []; } },
+  getObj: (key) => { try { return JSON.parse(localStorage.getItem('mcrm_' + key) || '{}'); } catch(e){ return {}; } },
+  set: (key, val) => { localStorage.setItem('mcrm_' + key, JSON.stringify(val)); },
+  genId: () => '_' + Math.random().toString(36).slice(2, 11) + Date.now().toString(36)
+};
 
-const firebaseConfig={apiKey:"AIzaSyD1MZYhhQJ1UF42Jx4GdpeIDVcn-dmjkj8",authDomain:"manicure-crm.firebaseapp.com",projectId:"manicure-crm",storageBucket:"manicure-crm.firebasestorage.app",messagingSenderId:"686749320151",appId:"1:686749320151:web:bf46c11f3cd99aeb8a0192"};
-const fbApp=initializeApp(firebaseConfig);
-const auth=getAuth(fbApp);
-const db=getFirestore(fbApp);
-const googleProvider=new GoogleAuthProvider();
+// Collections helpers
+function getAll(col) { return DB.get(col); }
+function saveAll(col, arr) { DB.set(col, arr); }
+function addItem(col, data) {
+  const arr = getAll(col);
+  const item = { id: DB.genId(), ...data };
+  arr.push(item);
+  saveAll(col, arr);
+  return item;
+}
+function updateItem(col, id, data) {
+  const arr = getAll(col);
+  const idx = arr.findIndex(i => i.id === id);
+  if (idx !== -1) { arr[idx] = { ...arr[idx], ...data }; saveAll(col, arr); }
+}
+function deleteItem(col, id) {
+  saveAll(col, getAll(col).filter(i => i.id !== id));
+}
+function getItem(col, id) { return getAll(col).find(i => i.id === id); }
 
-let currentUser=null,calendar=null,weekChartInstance=null,currentPeriodFilter='week';
-let selectedServices=[],editServices=[];
+// ── STATE ──
+let calendar = null, weekChartInstance = null, currentPeriodFilter = 'week';
+let selectedServices = [], editServices = [];
 
 // ── HELPERS ──
-const today=()=>new Date().toISOString().split('T')[0];
-const fmtDate=d=>{const[y,m,dd]=d.split('-');return`${dd}.${m}.${y}`};
-const initials=n=>{const p=n.trim().split(' ');return p.length>=2?(p[0][0]+p[1][0]).toUpperCase():n.slice(0,2).toUpperCase()};
-const col=name=>collection(db,'users',currentUser.uid,name);
-const docR=(name,id)=>doc(db,'users',currentUser.uid,name,id);
-const metaDoc=()=>doc(db,'users',currentUser.uid,'meta','settings');
+const today = () => new Date().toISOString().split('T')[0];
+const fmtDate = d => { const [y,m,dd] = d.split('-'); return `${dd}.${m}.${y}`; };
+const initials = n => { const p = n.trim().split(' '); return p.length >= 2 ? (p[0][0] + p[1][0]).toUpperCase() : n.slice(0,2).toUpperCase(); };
 
-function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800)}
-function closeModal(id){document.getElementById(id).classList.remove('open')}
-document.querySelectorAll('.modal-overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
-
-// ── AUTH ──
-window.switchAuthTab=function(tab){
-  document.getElementById('login-form').style.display=tab==='login'?'':'none';
-  document.getElementById('register-form').style.display=tab==='register'?'':'none';
-  document.getElementById('tab-login').classList.toggle('active',tab==='login');
-  document.getElementById('tab-register').classList.toggle('active',tab==='register');
-  document.getElementById('auth-error').style.display='none';
-};
-
-function showAuthError(msg){const el=document.getElementById('auth-error');el.textContent=msg;el.style.display='block'}
-function setAuthLoading(id,v){
-  const b=document.getElementById(id);b.disabled=v;
-  b.innerHTML=v?'<span class="spinner"></span>':id==='btn-login'?'<i class="fas fa-sign-in-alt"></i> Войти':'<i class="fas fa-user-plus"></i> Создать аккаунт';
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
 }
-function getAuthError(code){
-  return({'auth/user-not-found':'Пользователь не найден','auth/wrong-password':'Неверный пароль','auth/invalid-credential':'Неверный email или пароль','auth/email-already-in-use':'Email уже используется','auth/invalid-email':'Неверный формат email','auth/too-many-requests':'Слишком много попыток, подождите','auth/network-request-failed':'Нет соединения с интернетом'})[code]||'Ошибка: '+code;
-}
-
-window.doLogin=async function(){
-  const email=document.getElementById('login-email').value.trim();
-  const pass=document.getElementById('login-pass').value;
-  if(!email||!pass){showAuthError('Заполните все поля');return}
-  setAuthLoading('btn-login',true);
-  document.getElementById('auth-error').style.display='none';
-  try{await signInWithEmailAndPassword(auth,email,pass)}
-  catch(e){showAuthError(getAuthError(e.code));setAuthLoading('btn-login',false)}
-};
-
-window.doRegister=async function(){
-  const name=document.getElementById('reg-name').value.trim();
-  const email=document.getElementById('reg-email').value.trim();
-  const pass=document.getElementById('reg-pass').value;
-  if(!name||!email||!pass){showAuthError('Заполните все поля');return}
-  if(pass.length<6){showAuthError('Пароль минимум 6 символов');return}
-  setAuthLoading('btn-register',true);
-  document.getElementById('auth-error').style.display='none';
-  try{const c=await createUserWithEmailAndPassword(auth,email,pass);await updateProfile(c.user,{displayName:name})}
-  catch(e){showAuthError(getAuthError(e.code));setAuthLoading('btn-register',false)}
-};
-
-window.doGoogleLogin=async function(){
-  try{await signInWithPopup(auth,googleProvider)}
-  catch(e){if(e.code!=='auth/popup-closed-by-user')showAuthError(getAuthError(e.code))}
-};
-
-window.doResetPassword=async function(){
-  const email=document.getElementById('login-email').value.trim();
-  if(!email){showAuthError('Введите email для сброса пароля');return}
-  try{await sendPasswordResetEmail(auth,email);showToast('📧 Письмо для сброса пароля отправлено')}
-  catch(e){showAuthError(getAuthError(e.code))}
-};
-
-window.doLogout=async function(){
-  await signOut(auth);
-  closeModal('userModal');
-};
-
-window.openUserMenu=function(){document.getElementById('userModal').classList.add('open')};
-
-onAuthStateChanged(auth,async user=>{
-  if(user){
-    currentUser=user;
-    document.getElementById('auth-screen').style.display='none';
-    document.getElementById('app-shell').style.display='block';
-    const av=initials(user.displayName||user.email||'?');
-    document.getElementById('user-avatar').textContent=av;
-    document.getElementById('user-modal-avatar').textContent=av;
-    document.getElementById('user-modal-name').textContent=user.displayName||'—';
-    document.getElementById('user-modal-email').textContent=user.email||'—';
-    document.getElementById('set-user-email').textContent=user.email||'—';
-    await initApp();
-  } else {
-    currentUser=null;
-    document.getElementById('auth-screen').style.display='flex';
-    document.getElementById('app-shell').style.display='none';
-    if(calendar){calendar.destroy();calendar=null}
-  }
-});
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
 
 // ── INIT ──
-async function initApp(){
-  document.getElementById('f-date').value=today();
-  document.getElementById('exp-date').value=today();
-  if(!calendar){
-    calendar=new FullCalendar.Calendar(document.getElementById('calendar'),{
-      initialView:'dayGridMonth',locale:'ru',
-      headerToolbar:{left:'prev',center:'title',right:'next'},
-      dateClick:info=>renderDayRecords(info.dateStr),
-      events:async(info,success)=>{
-        const snap=await getDocs(col('records'));
-        success(snap.docs.map(d=>{
-          const r=d.data();
-          const color=r.status==='done'?'#386A20':r.status==='cancel'?'#B3261E':'#6750A4';
-          return{title:(r.time?r.time.slice(0,5)+' ':'')+r.name,start:r.date+(r.time?'T'+r.time:''),color};
+function initApp() {
+  document.getElementById('f-date').value = today();
+  document.getElementById('exp-date').value = today();
+
+  // Load settings
+  loadSettings();
+
+  if (!calendar) {
+    calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+      initialView: 'dayGridMonth',
+      locale: 'ru',
+      headerToolbar: { left: 'prev', center: 'title', right: 'next' },
+      dateClick: info => renderDayRecords(info.dateStr),
+      events: (info, success) => {
+        const recs = getAll('records');
+        success(recs.map(r => {
+          const color = r.status === 'done' ? '#386A20' : r.status === 'cancel' ? '#B3261E' : '#6750A4';
+          return { title: (r.time ? r.time.slice(0,5) + ' ' : '') + r.name, start: r.date + (r.time ? 'T' + r.time : ''), color };
         }));
       }
     });
     calendar.render();
   }
-  await loadSettings();
-  await updateGlobalTotal();
+
+  updateGlobalTotal();
   checkReminders();
-  document.addEventListener('click',e=>{if(!e.target.closest('.ac-wrap'))hideAC()});
-  const btn=document.getElementById('btn-contacts');
-  if(btn&&!('contacts' in navigator&&'ContactsManager' in window))btn.classList.add('unavailable');
+
+  document.addEventListener('click', e => { if (!e.target.closest('.ac-wrap')) hideAC(); });
+  const btn = document.getElementById('btn-contacts');
+  if (btn && !('contacts' in navigator && 'ContactsManager' in window)) btn.classList.add('unavailable');
 }
 
 // ── NAV ──
-window.nav=function(id,el){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
+window.nav = function(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
   el.classList.add('active');
-  if(id==='cal')calendar.render();
-  if(id==='fin')updateFinPage();
-  if(id==='set'){renderServicesList();renderClientsList()}
-  if(id==='add')renderServiceChips();
-  updateGlobalTotal();hideAC();
+  if (id === 'cal') calendar.render();
+  if (id === 'fin') updateFinPage();
+  if (id === 'set') { renderServicesList(); renderClientsList(); }
+  if (id === 'add') renderServiceChips();
+  updateGlobalTotal();
+  hideAC();
 };
 
 // ── SERVICES ──
-window.addService=async function(){
-  const name=document.getElementById('svc-name').value.trim();
-  const price=Number(document.getElementById('svc-price').value||0);
-  if(!name){showToast('⚠️ Введите название');return}
-  await addDoc(col('services'),{name,price});
-  document.getElementById('svc-name').value='';document.getElementById('svc-price').value='';
-  renderServicesList();showToast('✅ Услуга добавлена');
+window.addService = function() {
+  const name = document.getElementById('svc-name').value.trim();
+  const price = Number(document.getElementById('svc-price').value || 0);
+  if (!name) { showToast('⚠️ Введите название'); return; }
+  addItem('services', { name, price });
+  document.getElementById('svc-name').value = '';
+  document.getElementById('svc-price').value = '';
+  renderServicesList();
+  showToast('✅ Услуга добавлена');
 };
-window.deleteService=async function(id){await deleteDoc(docR('services',id));renderServicesList()};
 
-async function renderServicesList(){
-  const list=document.getElementById('services-list');
-  const snap=await getDocs(col('services'));
-  if(snap.empty){list.innerHTML='<div class="empty-state" style="padding:16px 0"><i class="fas fa-scissors"></i><p>Услуги не добавлены</p></div>';return}
-  list.innerHTML=snap.docs.map(d=>`<div class="service-item"><div><div class="service-name">${d.data().name}</div>${d.data().price?`<div class="service-price-label">${d.data().price.toLocaleString()} ₽</div>`:''}</div><button class="btn-delete" onclick="deleteService('${d.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
+window.deleteService = function(id) {
+  deleteItem('services', id);
+  renderServicesList();
+};
+
+function renderServicesList() {
+  const list = document.getElementById('services-list');
+  const svcs = getAll('services');
+  if (!svcs.length) { list.innerHTML = '<div class="empty-state" style="padding:16px 0"><i class="fas fa-scissors"></i><p>Услуги не добавлены</p></div>'; return; }
+  list.innerHTML = svcs.map(s => `<div class="service-item"><div><div class="service-name">${s.name}</div>${s.price ? `<div class="service-price-label">${s.price.toLocaleString()} ₽</div>` : ''}</div><button class="btn-delete" onclick="deleteService('${s.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
 }
 
-async function renderServiceChips(){
-  const wrap=document.getElementById('service-chips');
-  const snap=await getDocs(col('services'));
-  if(snap.empty){wrap.innerHTML='';return}
-  wrap.innerHTML=snap.docs.map(d=>`<button class="svc-chip" data-name="${d.data().name.replace(/"/g,'&quot;')}" data-price="${d.data().price||0}" onclick="toggleServiceChip(this)">${d.data().name}${d.data().price?` <span class="cp">${d.data().price.toLocaleString()}₽</span>`:''}</button>`).join('');
+function renderServiceChips() {
+  const wrap = document.getElementById('service-chips');
+  const svcs = getAll('services');
+  if (!svcs.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = svcs.map(s => `<button class="svc-chip${selectedServices.find(x=>x.name===s.name)?' sel':''}" data-name="${s.name.replace(/"/g,'&quot;')}" data-price="${s.price||0}" onclick="toggleServiceChip(this)">${s.name}${s.price ? ` <span class="cp">${s.price.toLocaleString()}₽</span>` : ''}</button>`).join('');
 }
 
-window.toggleServiceChip=function(el){
-  const name=el.dataset.name,price=Number(el.dataset.price)||0;
-  const idx=selectedServices.findIndex(s=>s.name===name);
-  if(idx===-1){selectedServices.push({name,price});el.classList.add('sel')}
-  else{selectedServices.splice(idx,1);el.classList.remove('sel')}
+window.toggleServiceChip = function(el) {
+  const name = el.dataset.name, price = Number(el.dataset.price) || 0;
+  const idx = selectedServices.findIndex(s => s.name === name);
+  if (idx === -1) { selectedServices.push({ name, price }); el.classList.add('sel'); }
+  else { selectedServices.splice(idx, 1); el.classList.remove('sel'); }
   updateBasket();
 };
-window.addManualService=function(){
-  const nameEl=document.getElementById('f-svc-manual'),priceEl=document.getElementById('f-svc-manual-price');
-  const name=nameEl.value.trim(),price=Number(priceEl.value)||0;
-  if(!name){showToast('⚠️ Введите название');return}
-  selectedServices.push({name,price});nameEl.value='';priceEl.value='';updateBasket();
-};
-window.removeBasketItem=function(idx){
-  const r=selectedServices[idx];selectedServices.splice(idx,1);
-  document.querySelectorAll('.svc-chip').forEach(c=>{if(c.dataset.name===r.name)c.classList.remove('sel')});
+
+window.addManualService = function() {
+  const nameEl = document.getElementById('f-svc-manual'), priceEl = document.getElementById('f-svc-manual-price');
+  const name = nameEl.value.trim(), price = Number(priceEl.value) || 0;
+  if (!name) { showToast('⚠️ Введите название'); return; }
+  selectedServices.push({ name, price });
+  nameEl.value = ''; priceEl.value = '';
   updateBasket();
 };
-function updateBasket(){
-  const b=document.getElementById('svc-basket');
-  if(!selectedServices.length){b.style.display='none';return}
-  b.style.display='block';
-  document.getElementById('svc-basket-sum').textContent=selectedServices.reduce((s,i)=>s+i.price,0).toLocaleString()+' ₽';
-  document.getElementById('svc-basket-items').innerHTML=selectedServices.map((s,i)=>`<div class="svc-basket-item"><div class="svc-basket-item-name">${s.name}</div><div class="svc-basket-item-price">${s.price?s.price.toLocaleString()+' ₽':'—'}</div><button class="svc-basket-item-del" onclick="removeBasketItem(${i})">✕</button></div>`).join('');
+
+window.removeBasketItem = function(idx) {
+  const r = selectedServices[idx];
+  selectedServices.splice(idx, 1);
+  document.querySelectorAll('.svc-chip').forEach(c => { if (c.dataset.name === r.name) c.classList.remove('sel'); });
+  updateBasket();
+};
+
+function updateBasket() {
+  const b = document.getElementById('svc-basket');
+  if (!selectedServices.length) { b.style.display = 'none'; return; }
+  b.style.display = 'block';
+  document.getElementById('svc-basket-sum').textContent = selectedServices.reduce((s,i) => s + i.price, 0).toLocaleString() + ' ₽';
+  document.getElementById('svc-basket-items').innerHTML = selectedServices.map((s,i) => `<div class="svc-basket-item"><div class="svc-basket-item-name">${s.name}</div><div class="svc-basket-item-price">${s.price ? s.price.toLocaleString() + ' ₽' : '—'}</div><button class="svc-basket-item-del" onclick="removeBasketItem(${i})">✕</button></div>`).join('');
 }
 
 // ── CLIENTS ──
-window.addClient=async function(){
-  const name=document.getElementById('cl-name').value.trim(),phone=document.getElementById('cl-phone').value.trim();
-  if(!name){showToast('⚠️ Введите имя');return}
-  await addDoc(col('clients'),{name,phone:phone||''});
-  document.getElementById('cl-name').value='';document.getElementById('cl-phone').value='';
-  renderClientsList();showToast('✅ Клиент добавлен');
+window.addClient = function() {
+  const name = document.getElementById('cl-name').value.trim();
+  const phone = document.getElementById('cl-phone').value.trim();
+  if (!name) { showToast('⚠️ Введите имя'); return; }
+  addItem('clients', { name, phone: phone || '' });
+  document.getElementById('cl-name').value = '';
+  document.getElementById('cl-phone').value = '';
+  renderClientsList();
+  showToast('✅ Клиент добавлен');
 };
-window.deleteClient=async function(id){await deleteDoc(docR('clients',id));renderClientsList()};
 
-async function renderClientsList(){
-  const list=document.getElementById('clients-list');
-  const snap=await getDocs(col('clients'));
-  if(snap.empty){list.innerHTML='<div class="empty-state" style="padding:16px 0"><i class="fas fa-users"></i><p>Клиенты не добавлены</p></div>';return}
-  const cls=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.name.localeCompare(b.name));
-  list.innerHTML=cls.map(c=>`<div class="client-item" onclick="openClientHistory('${c.name.replace(/'/g,"\\'")}')"><div class="cl-left"><div class="cl-avatar">${initials(c.name)}</div><div><div class="cl-name">${c.name}</div><div class="cl-phone">${c.phone||'Телефон не указан'}</div></div></div><button class="btn-delete" onclick="event.stopPropagation();deleteClient('${c.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
+window.deleteClient = function(id) {
+  deleteItem('clients', id);
+  renderClientsList();
+};
+
+function renderClientsList() {
+  const list = document.getElementById('clients-list');
+  const cls = getAll('clients').sort((a,b) => a.name.localeCompare(b.name));
+  if (!cls.length) { list.innerHTML = '<div class="empty-state" style="padding:16px 0"><i class="fas fa-users"></i><p>Клиенты не добавлены</p></div>'; return; }
+  list.innerHTML = cls.map(c => `<div class="client-item" onclick="openClientHistory('${c.name.replace(/'/g,"\\'")}')">\
+<div class="cl-left"><div class="cl-avatar">${initials(c.name)}</div><div><div class="cl-name">${c.name}</div><div class="cl-phone">${c.phone || 'Телефон не указан'}</div></div></div>\
+<button class="btn-delete" onclick="event.stopPropagation();deleteClient('${c.id}')"><i class="fas fa-trash"></i></button></div>`).join('');
 }
 
-window.openClientHistory=async function(name){
-  const snap=await getDocs(col('records'));
-  const recs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>r.name.toLowerCase()===name.toLowerCase()).sort((a,b)=>b.date.localeCompare(a.date));
-  const total=recs.reduce((s,r)=>s+r.price,0),avg=recs.length?Math.round(total/recs.length):0;
-  document.getElementById('client-modal-content').innerHTML=`
+window.openClientHistory = function(name) {
+  const recs = getAll('records').filter(r => r.name.toLowerCase() === name.toLowerCase()).sort((a,b) => b.date.localeCompare(a.date));
+  const total = recs.reduce((s,r) => s + r.price, 0);
+  const avg = recs.length ? Math.round(total / recs.length) : 0;
+  document.getElementById('client-modal-content').innerHTML = `
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
       <div class="cl-avatar" style="width:52px;height:52px;font-size:20px;">${initials(name)}</div>
       <div><div style="font-size:20px;font-weight:900;">${name}</div></div>
@@ -752,264 +650,384 @@ window.openClientHistory=async function(name){
       <div class="client-stat-row"><span class="client-stat-label">Всего визитов</span><span class="client-stat-value">${recs.length}</span></div>
       <div class="client-stat-row"><span class="client-stat-label">Сумма за всё время</span><span class="client-stat-value" style="color:var(--green)">${total.toLocaleString()} ₽</span></div>
       <div class="client-stat-row"><span class="client-stat-label">Средний чек</span><span class="client-stat-value">${avg.toLocaleString()} ₽</span></div>
-      <div class="client-stat-row"><span class="client-stat-label">Последний визит</span><span class="client-stat-value">${recs.length?fmtDate(recs[0].date):'—'}</span></div>
+      <div class="client-stat-row"><span class="client-stat-label">Последний визит</span><span class="client-stat-value">${recs.length ? fmtDate(recs[0].date) : '—'}</span></div>
     </div>
     <div class="section-title">История посещений</div>
-    ${recs.length?recs.map(r=>`<div class="client-hist-item"><div><div class="client-hist-date">${fmtDate(r.date)}${r.time?' · '+r.time.slice(0,5):''}</div><div class="client-hist-svc">${r.service||'—'}</div>${r.note?`<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">📝 ${r.note}</div>`:''}</div><div class="client-hist-price">+${r.price.toLocaleString()} ₽</div></div>`).join(''):'<div class="empty-state" style="padding:20px 0"><i class="fas fa-calendar"></i><p>Нет визитов</p></div>'}`;
+    ${recs.length ? recs.map(r => `<div class="client-hist-item"><div><div class="client-hist-date">${fmtDate(r.date)}${r.time ? ' · ' + r.time.slice(0,5) : ''}</div><div class="client-hist-svc">${r.service || '—'}</div>${r.note ? `<div style="font-size:11px;color:var(--text-muted);margin-top:2px;">📝 ${r.note}</div>` : ''}</div><div class="client-hist-price">+${r.price.toLocaleString()} ₽</div></div>`).join('') : '<div class="empty-state" style="padding:20px 0"><i class="fas fa-calendar"></i><p>Нет визитов</p></div>'}`;
   document.getElementById('clientModal').classList.add('open');
 };
 
-window.onClientInput=async function(q){
-  const snap=await getDocs(col('clients'));
-  const all=snap.docs.map(d=>({id:d.id,...d.data()}));
-  const filtered=q.trim()?all.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())):all;
-  const ac=document.getElementById('client-ac');
-  if(!filtered.length){hideAC();return}
-  ac.style.display='block';
-  ac.innerHTML=filtered.slice(0,7).map(c=>`<div class="ac-item" onclick="pickClient('${c.name.replace(/'/g,"\\'")}','${(c.phone||'').replace(/'/g,"\\'")}')"><div class="ac-avatar">${initials(c.name)}</div><div><div style="font-weight:700;font-size:14px;">${c.name}</div>${c.phone?`<div style="font-size:11px;color:var(--text-muted)">${c.phone}</div>`:''}</div></div>`).join('');
+window.onClientInput = function(q) {
+  const all = getAll('clients');
+  const filtered = q.trim() ? all.filter(c => c.name.toLowerCase().includes(q.toLowerCase())) : all;
+  const ac = document.getElementById('client-ac');
+  if (!filtered.length) { hideAC(); return; }
+  ac.style.display = 'block';
+  ac.innerHTML = filtered.slice(0,7).map(c => `<div class="ac-item" onclick="pickClient('${c.name.replace(/'/g,"\\'")}','${(c.phone||'').replace(/'/g,"\\'")}')"><div class="ac-avatar">${initials(c.name)}</div><div><div style="font-weight:700;font-size:14px;">${c.name}</div>${c.phone ? `<div style="font-size:11px;color:var(--text-muted)">${c.phone}</div>` : ''}</div></div>`).join('');
 };
-window.pickClient=function(name,phone){document.getElementById('f-name').value=name;document.getElementById('f-phone').value=phone;hideAC()};
-function hideAC(){const ac=document.getElementById('client-ac');if(ac)ac.style.display='none'}
 
-async function autoSaveClient(name,phone){
-  if(!name)return;
-  const snap=await getDocs(col('clients'));
-  const exists=snap.docs.find(d=>d.data().name.toLowerCase()===name.toLowerCase());
-  if(!exists)await addDoc(col('clients'),{name,phone:phone||''});
-  else if(phone&&!exists.data().phone)await updateDoc(docR('clients',exists.id),{phone});
+window.pickClient = function(name, phone) {
+  document.getElementById('f-name').value = name;
+  document.getElementById('f-phone').value = phone;
+  hideAC();
+};
+
+function hideAC() { const ac = document.getElementById('client-ac'); if (ac) ac.style.display = 'none'; }
+
+function autoSaveClient(name, phone) {
+  if (!name) return;
+  const existing = getAll('clients').find(c => c.name.toLowerCase() === name.toLowerCase());
+  if (!existing) addItem('clients', { name, phone: phone || '' });
+  else if (phone && !existing.phone) updateItem('clients', existing.id, { phone });
 }
 
 // ── SAVE ENTRY ──
-window.saveEntry=async function(){
-  const id=document.getElementById('f-id').value;
-  const svcs=[...selectedServices];
-  if(!svcs.length){showToast('⚠️ Добавьте хотя бы одну услугу');return}
-  const data={name:document.getElementById('f-name').value.trim(),phone:document.getElementById('f-phone').value.trim(),services:svcs,service:svcs.map(s=>s.name).join(', '),price:svcs.reduce((s,i)=>s+i.price,0),date:document.getElementById('f-date').value,time:document.getElementById('f-time').value,remind:document.getElementById('f-remind').value,note:document.getElementById('f-note').value.trim(),status:'wait',recur:document.getElementById('f-recur').value,createdAt:serverTimestamp()};
-  if(!data.name||!data.date){showToast('⚠️ Заполните имя и дату');return}
-  await autoSaveClient(data.name,data.phone);
-  if(id){
-    await updateDoc(docR('records',id),data);showToast('✅ Запись обновлена');cancelEdit();
+window.saveEntry = function() {
+  const id = document.getElementById('f-id').value;
+  const svcs = [...selectedServices];
+  if (!svcs.length) { showToast('⚠️ Добавьте хотя бы одну услугу'); return; }
+  const data = {
+    name: document.getElementById('f-name').value.trim(),
+    phone: document.getElementById('f-phone').value.trim(),
+    services: svcs,
+    service: svcs.map(s => s.name).join(', '),
+    price: svcs.reduce((s,i) => s + i.price, 0),
+    date: document.getElementById('f-date').value,
+    time: document.getElementById('f-time').value,
+    remind: document.getElementById('f-remind').value,
+    note: document.getElementById('f-note').value.trim(),
+    status: 'wait',
+    recur: document.getElementById('f-recur').value,
+    createdAt: new Date().toISOString()
+  };
+  if (!data.name || !data.date) { showToast('⚠️ Заполните имя и дату'); return; }
+  autoSaveClient(data.name, data.phone);
+
+  if (id) {
+    updateItem('records', id, data);
+    showToast('✅ Запись обновлена');
+    cancelEdit();
   } else {
-    await addDoc(col('records'),data);
-    if(data.recur){
-      const days=Number(data.recur);
-      for(let i=1;i<=4;i++){const d=new Date(data.date);d.setDate(d.getDate()+days*i);await addDoc(col('records'),{...data,date:d.toISOString().split('T')[0],recur:'',createdAt:serverTimestamp()});}
+    addItem('records', data);
+    if (data.recur) {
+      const days = Number(data.recur);
+      for (let i = 1; i <= 4; i++) {
+        const d = new Date(data.date);
+        d.setDate(d.getDate() + days * i);
+        addItem('records', { ...data, date: d.toISOString().split('T')[0], recur: '', createdAt: new Date().toISOString() });
+      }
       showToast('✅ Создано 5 повторяющихся записей');
     } else showToast('✅ Запись добавлена');
     clearForm();
   }
-  calendar.refetchEvents();updateGlobalTotal();
-  nav('cal',document.getElementById('nav-cal'));renderDayRecords(data.date);
+
+  calendar.refetchEvents();
+  updateGlobalTotal();
+  nav('cal', document.getElementById('nav-cal'));
+  renderDayRecords(data.date);
 };
 
-function clearForm(){
-  ['f-name','f-phone','f-time','f-svc-manual','f-svc-manual-price','f-note'].forEach(i=>{const el=document.getElementById(i);if(el)el.value=''});
-  document.getElementById('f-date').value=today();document.getElementById('f-remind').value='';document.getElementById('f-recur').value='';document.getElementById('f-id').value='';
-  selectedServices=[];updateBasket();document.querySelectorAll('.svc-chip').forEach(c=>c.classList.remove('sel'));hideAC();
+function clearForm() {
+  ['f-name','f-phone','f-time','f-svc-manual','f-svc-manual-price','f-note'].forEach(i => { const el = document.getElementById(i); if (el) el.value = ''; });
+  document.getElementById('f-date').value = today();
+  document.getElementById('f-remind').value = '';
+  document.getElementById('f-recur').value = '';
+  document.getElementById('f-id').value = '';
+  selectedServices = [];
+  updateBasket();
+  document.querySelectorAll('.svc-chip').forEach(c => c.classList.remove('sel'));
+  hideAC();
 }
-window.cancelEdit=function(){
-  clearForm();document.getElementById('form-title').textContent='Новая запись';document.getElementById('form-btn-text').textContent='Записать';document.getElementById('cancel-edit-btn').style.display='none';
+
+window.cancelEdit = function() {
+  clearForm();
+  document.getElementById('form-title').textContent = 'Новая запись';
+  document.getElementById('form-btn-text').textContent = 'Записать';
+  document.getElementById('cancel-edit-btn').style.display = 'none';
 };
 
 // ── RENDER DAY ──
-window.renderDayRecords=async function(dateStr){
-  const container=document.getElementById('day-details');
-  const snap=await getDocs(col('records'));
-  const all=snap.docs.map(d=>({id:d.id,...d.data()}));
-  const records=all.filter(r=>r.date===dateStr).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-  const ms=await getDoc(metaDoc());
-  const tpl=(ms.exists()&&ms.data().tpl)||"Привет, {name}! Напоминаем о записи на {service} {date} в {time}.";
-  container.innerHTML='';
-  const hdr=document.createElement('div');hdr.className='day-header';
-  hdr.innerHTML=`<div class="day-title"><i class="fas fa-calendar-day" style="margin-right:6px"></i>${fmtDate(dateStr)}</div><div class="day-count">${records.length} записей</div>`;
+window.renderDayRecords = async function(dateStr) {
+  const container = document.getElementById('day-details');
+  const all = getAll('records');
+  const records = all.filter(r => r.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+  const settings = DB.getObj('settings');
+  const tpl = settings.tpl || "Привет, {name}! Напоминаем о записи на {service} {date} в {time}.";
+  container.innerHTML = '';
+
+  const hdr = document.createElement('div'); hdr.className = 'day-header';
+  hdr.innerHTML = `<div class="day-title"><i class="fas fa-calendar-day" style="margin-right:6px"></i>${fmtDate(dateStr)}</div><div class="day-count">${records.length} записей</div>`;
   container.appendChild(hdr);
-  const tabs=document.createElement('div');tabs.className='day-tabs';
-  tabs.innerHTML=`<button class="day-tab active" onclick="filterDay('${dateStr}','all',this)">Все (${records.length})</button><button class="day-tab" onclick="filterDay('${dateStr}','wait',this)">Ожидает</button><button class="day-tab" onclick="filterDay('${dateStr}','done',this)">Пришёл</button><button class="day-tab" onclick="filterDay('${dateStr}','cancel',this)">Отменил</button>`;
+
+  const tabs = document.createElement('div'); tabs.className = 'day-tabs';
+  tabs.innerHTML = `<button class="day-tab active" onclick="filterDay('${dateStr}','all',this)">Все (${records.length})</button><button class="day-tab" onclick="filterDay('${dateStr}','wait',this)">Ожидает</button><button class="day-tab" onclick="filterDay('${dateStr}','done',this)">Пришёл</button><button class="day-tab" onclick="filterDay('${dateStr}','cancel',this)">Отменил</button>`;
   container.appendChild(tabs);
-  if(!records.length){container.innerHTML+='<div class="empty-state"><i class="fas fa-calendar"></i><p>Нет записей на этот день</p></div>';return}
-  const listDiv=document.createElement('div');listDiv.id='day-list';container.appendChild(listDiv);
-  renderCards(records,listDiv,tpl,dateStr);
+
+  if (!records.length) { container.innerHTML += '<div class="empty-state"><i class="fas fa-calendar"></i><p>Нет записей на этот день</p></div>'; return; }
+  const listDiv = document.createElement('div'); listDiv.id = 'day-list'; container.appendChild(listDiv);
+  renderCards(records, listDiv, tpl, dateStr);
 };
 
-window.filterDay=async function(dateStr,status,el){
-  document.querySelectorAll('.day-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
-  const snap=await getDocs(col('records'));
-  let recs=snap.docs.map(d=>({id:d.id,...d.data()})).filter(r=>r.date===dateStr).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
-  if(status!=='all')recs=recs.filter(r=>(r.status||'wait')===status);
-  const ms=await getDoc(metaDoc());
-  const tpl=(ms.exists()&&ms.data().tpl)||"Привет, {name}! Напоминаем о записи на {service} {date} в {time}.";
-  const listDiv=document.getElementById('day-list');if(listDiv)renderCards(recs,listDiv,tpl,dateStr);
+window.filterDay = function(dateStr, status, el) {
+  document.querySelectorAll('.day-tab').forEach(t => t.classList.remove('active')); el.classList.add('active');
+  let recs = getAll('records').filter(r => r.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+  if (status !== 'all') recs = recs.filter(r => (r.status || 'wait') === status);
+  const tpl = DB.getObj('settings').tpl || "Привет, {name}! Напоминаем о записи на {service} {date} в {time}.";
+  const listDiv = document.getElementById('day-list');
+  if (listDiv) renderCards(recs, listDiv, tpl, dateStr);
 };
 
-function renderCards(records,container,tpl,dateStr){
-  container.innerHTML='';
-  if(!records.length){container.innerHTML='<div class="empty-state"><i class="fas fa-search"></i><p>Нет записей</p></div>';return}
-  const SL={wait:'⏳ Ожидает',done:'✅ Пришёл',cancel:'❌ Отменил'};
-  records.forEach(r=>{
-    const msg=tpl.replace(/{name}/g,r.name).replace(/{service}/g,r.service||'').replace(/{date}/g,fmtDate(r.date)).replace(/{time}/g,r.time||'');
-    const sms=`sms:${r.phone}?body=${encodeURIComponent(msg)}`;
-    const st=r.status||'wait';
-    const sa=r.services&&r.services.length?r.services:[{name:r.service||'—',price:r.price}];
-    const sh=sa.length===1?`<div class="record-service">${sa[0].name} <span class="record-price">+${r.price.toLocaleString()} ₽</span></div>`:`<div class="record-services-list">${sa.map(s=>`<div class="record-svc-row"><span>${s.name}</span><span class="record-price">+${s.price.toLocaleString()} ₽</span></div>`).join('')}<div class="record-svc-total">Итого: <b>${r.price.toLocaleString()} ₽</b></div></div>`;
-    const div=document.createElement('div');div.className=`record-card status-${st}`;
-    div.innerHTML=`<div class="record-header"><div class="record-name" onclick="openClientHistory('${r.name.replace(/'/g,"\\'")}')"> ${r.name}</div>${r.time?`<div class="record-time">${r.time.slice(0,5)}</div>`:''}</div>${sh}<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;"><span class="status-badge status-${st}" onclick="cycleStatus('${r.id}','${dateStr}')">${SL[st]}</span>${r.remind?`<span class="reminder-pill"><i class="fas fa-bell"></i> за ${r.remind>=60?(r.remind/60)+'ч':r.remind+'мин'}</span>`:''}${r.recur?`<span class="recur-chip"><i class="fas fa-redo"></i> повтор</span>`:''}</div>${r.note?`<div class="note-pill"><i class="fas fa-sticky-note"></i><span>${r.note}</span></div>`:''}<div class="record-actions">${r.phone?`<a href="${sms}" class="btn-sms"><i class="fas fa-comment-sms"></i> СМС</a>`:''}${r.phone?`<a href="tel:${r.phone}" class="btn-sms" style="background:linear-gradient(135deg,#6750A4,#9B72CF)"><i class="fas fa-phone"></i></a>`:''}<button class="btn-edit" onclick="openEdit('${r.id}')"><i class="fas fa-pen"></i> Изменить</button><button class="btn-delete" onclick="deleteRec('${r.id}','${r.date}')"><i class="fas fa-trash"></i></button></div>`;
+function renderCards(records, container, tpl, dateStr) {
+  container.innerHTML = '';
+  if (!records.length) { container.innerHTML = '<div class="empty-state"><i class="fas fa-search"></i><p>Нет записей</p></div>'; return; }
+  const SL = { wait:'⏳ Ожидает', done:'✅ Пришёл', cancel:'❌ Отменил' };
+  records.forEach(r => {
+    const msg = tpl.replace(/{name}/g, r.name).replace(/{service}/g, r.service||'').replace(/{date}/g, fmtDate(r.date)).replace(/{time}/g, r.time||'');
+    const sms = `sms:${r.phone}?body=${encodeURIComponent(msg)}`;
+    const st = r.status || 'wait';
+    const sa = r.services && r.services.length ? r.services : [{name: r.service||'—', price: r.price}];
+    const sh = sa.length === 1
+      ? `<div class="record-service">${sa[0].name} <span class="record-price">+${r.price.toLocaleString()} ₽</span></div>`
+      : `<div class="record-services-list">${sa.map(s=>`<div class="record-svc-row"><span>${s.name}</span><span class="record-price">+${s.price.toLocaleString()} ₽</span></div>`).join('')}<div class="record-svc-total">Итого: <b>${r.price.toLocaleString()} ₽</b></div></div>`;
+    const div = document.createElement('div'); div.className = `record-card status-${st}`;
+    div.innerHTML = `<div class="record-header"><div class="record-name" onclick="openClientHistory('${r.name.replace(/'/g,"\\'")}')"> ${r.name}</div>${r.time ? `<div class="record-time">${r.time.slice(0,5)}</div>` : ''}</div>${sh}<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;"><span class="status-badge status-${st}" onclick="cycleStatus('${r.id}','${dateStr}')">${SL[st]}</span>${r.remind ? `<span class="reminder-pill"><i class="fas fa-bell"></i> за ${r.remind>=60?(r.remind/60)+'ч':r.remind+'мин'}</span>` : ''}${r.recur ? `<span class="recur-chip"><i class="fas fa-redo"></i> повтор</span>` : ''}</div>${r.note ? `<div class="note-pill"><i class="fas fa-sticky-note"></i><span>${r.note}</span></div>` : ''}<div class="record-actions">${r.phone ? `<a href="${sms}" class="btn-sms"><i class="fas fa-comment-sms"></i> СМС</a>` : ''}${r.phone ? `<a href="tel:${r.phone}" class="btn-sms" style="background:linear-gradient(135deg,#6750A4,#9B72CF)"><i class="fas fa-phone"></i></a>` : ''}<button class="btn-edit" onclick="openEdit('${r.id}')"><i class="fas fa-pen"></i> Изменить</button><button class="btn-delete" onclick="deleteRec('${r.id}','${r.date}')"><i class="fas fa-trash"></i></button></div>`;
     container.appendChild(div);
   });
 }
 
-window.cycleStatus=async function(id,dateStr){
-  const d=await getDoc(docR('records',id));
-  const next={wait:'done',done:'cancel',cancel:'wait'}[d.data().status||'wait'];
-  await updateDoc(docR('records',id),{status:next});
-  calendar.refetchEvents();renderDayRecords(dateStr);
+window.cycleStatus = function(id, dateStr) {
+  const r = getItem('records', id);
+  if (!r) return;
+  const next = { wait:'done', done:'cancel', cancel:'wait' }[r.status || 'wait'];
+  updateItem('records', id, { status: next });
+  calendar.refetchEvents();
+  renderDayRecords(dateStr);
 };
-window.deleteRec=async function(id,date){
-  if(!confirm('Удалить запись?'))return;
-  await deleteDoc(docR('records',id));
-  calendar.refetchEvents();renderDayRecords(date);updateGlobalTotal();showToast('🗑️ Запись удалена');
+
+window.deleteRec = function(id, date) {
+  if (!confirm('Удалить запись?')) return;
+  deleteItem('records', id);
+  calendar.refetchEvents();
+  renderDayRecords(date);
+  updateGlobalTotal();
+  showToast('🗑️ Запись удалена');
 };
 
 // ── EDIT MODAL ──
-window.openEdit=async function(id){
-  const d=await getDoc(docR('records',id));const r={id:d.id,...d.data()};
-  document.getElementById('m-id').value=r.id;document.getElementById('m-name').value=r.name;
-  document.getElementById('m-phone').value=r.phone||'';document.getElementById('m-date').value=r.date;
-  document.getElementById('m-time').value=r.time||'';document.getElementById('m-note').value=r.note||'';
-  editServices=r.services&&r.services.length?[...r.services]:[{name:r.service||'',price:r.price||0}];
-  updateEditBasket();document.getElementById('editModal').classList.add('open');
-};
-window.addEditService=function(){
-  const name=document.getElementById('m-svc-name').value.trim(),price=Number(document.getElementById('m-svc-price').value)||0;
-  if(!name){showToast('⚠️ Введите название');return}
-  editServices.push({name,price});document.getElementById('m-svc-name').value='';document.getElementById('m-svc-price').value='';updateEditBasket();
-};
-window.removeEditService=function(idx){editServices.splice(idx,1);updateEditBasket()};
-function updateEditBasket(){
-  const b=document.getElementById('m-svc-basket');
-  if(!editServices.length){b.style.display='none';return}
-  b.style.display='block';
-  document.getElementById('m-svc-basket-sum').textContent=editServices.reduce((s,i)=>s+i.price,0).toLocaleString()+' ₽';
-  document.getElementById('m-svc-basket-items').innerHTML=editServices.map((s,i)=>`<div class="svc-basket-item"><div class="svc-basket-item-name">${s.name}</div><div class="svc-basket-item-price">${s.price?s.price.toLocaleString()+' ₽':'—'}</div><button class="svc-basket-item-del" onclick="removeEditService(${i})">✕</button></div>`).join('');
-}
-window.saveEdit=async function(){
-  const id=document.getElementById('m-id').value;
-  if(!editServices.length){showToast('⚠️ Добавьте услугу');return}
-  const data={name:document.getElementById('m-name').value.trim(),phone:document.getElementById('m-phone').value.trim(),services:[...editServices],service:editServices.map(s=>s.name).join(', '),price:editServices.reduce((s,i)=>s+i.price,0),date:document.getElementById('m-date').value,time:document.getElementById('m-time').value,note:document.getElementById('m-note').value.trim()};
-  if(!data.name||!data.date){showToast('⚠️ Заполните имя и дату');return}
-  await updateDoc(docR('records',id),data);
-  closeModal('editModal');calendar.refetchEvents();updateGlobalTotal();renderDayRecords(data.date);showToast('✅ Запись обновлена');
+window.openEdit = function(id) {
+  const r = getItem('records', id);
+  if (!r) return;
+  document.getElementById('m-id').value = r.id;
+  document.getElementById('m-name').value = r.name;
+  document.getElementById('m-phone').value = r.phone || '';
+  document.getElementById('m-date').value = r.date;
+  document.getElementById('m-time').value = r.time || '';
+  document.getElementById('m-note').value = r.note || '';
+  editServices = r.services && r.services.length ? [...r.services] : [{name: r.service||'', price: r.price||0}];
+  updateEditBasket();
+  document.getElementById('editModal').classList.add('open');
 };
 
-window.closeModal=closeModal;
+window.addEditService = function() {
+  const name = document.getElementById('m-svc-name').value.trim(), price = Number(document.getElementById('m-svc-price').value) || 0;
+  if (!name) { showToast('⚠️ Введите название'); return; }
+  editServices.push({ name, price });
+  document.getElementById('m-svc-name').value = '';
+  document.getElementById('m-svc-price').value = '';
+  updateEditBasket();
+};
+
+window.removeEditService = function(idx) { editServices.splice(idx, 1); updateEditBasket(); };
+
+function updateEditBasket() {
+  const b = document.getElementById('m-svc-basket');
+  if (!editServices.length) { b.style.display = 'none'; return; }
+  b.style.display = 'block';
+  document.getElementById('m-svc-basket-sum').textContent = editServices.reduce((s,i) => s + i.price, 0).toLocaleString() + ' ₽';
+  document.getElementById('m-svc-basket-items').innerHTML = editServices.map((s,i) => `<div class="svc-basket-item"><div class="svc-basket-item-name">${s.name}</div><div class="svc-basket-item-price">${s.price ? s.price.toLocaleString() + ' ₽' : '—'}</div><button class="svc-basket-item-del" onclick="removeEditService(${i})">✕</button></div>`).join('');
+}
+
+window.saveEdit = function() {
+  const id = document.getElementById('m-id').value;
+  if (!editServices.length) { showToast('⚠️ Добавьте услугу'); return; }
+  const data = {
+    name: document.getElementById('m-name').value.trim(),
+    phone: document.getElementById('m-phone').value.trim(),
+    services: [...editServices],
+    service: editServices.map(s => s.name).join(', '),
+    price: editServices.reduce((s,i) => s + i.price, 0),
+    date: document.getElementById('m-date').value,
+    time: document.getElementById('m-time').value,
+    note: document.getElementById('m-note').value.trim()
+  };
+  if (!data.name || !data.date) { showToast('⚠️ Заполните имя и дату'); return; }
+  updateItem('records', id, data);
+  closeModal('editModal');
+  calendar.refetchEvents();
+  updateGlobalTotal();
+  renderDayRecords(data.date);
+  showToast('✅ Запись обновлена');
+};
+
+window.closeModal = closeModal;
 
 // ── EXPENSES ──
-window.openExpenseSheet=function(){document.getElementById('exp-date').value=today();document.getElementById('expenseModal').classList.add('open')};
-window.saveExpense=async function(){
-  const name=document.getElementById('exp-name').value.trim(),amount=Number(document.getElementById('exp-amount').value||0),date=document.getElementById('exp-date').value;
-  if(!name||!amount){showToast('⚠️ Заполните поля');return}
-  await addDoc(col('expenses'),{name,amount,date,createdAt:serverTimestamp()});
-  document.getElementById('exp-name').value='';document.getElementById('exp-amount').value='';
-  closeModal('expenseModal');updateFinPage();showToast('✅ Расход добавлен');
+window.openExpenseSheet = function() { document.getElementById('exp-date').value = today(); document.getElementById('expenseModal').classList.add('open'); };
+window.saveExpense = function() {
+  const name = document.getElementById('exp-name').value.trim();
+  const amount = Number(document.getElementById('exp-amount').value || 0);
+  const date = document.getElementById('exp-date').value;
+  if (!name || !amount) { showToast('⚠️ Заполните поля'); return; }
+  addItem('expenses', { name, amount, date, createdAt: new Date().toISOString() });
+  document.getElementById('exp-name').value = '';
+  document.getElementById('exp-amount').value = '';
+  closeModal('expenseModal');
+  updateFinPage();
+  showToast('✅ Расход добавлен');
 };
 
 // ── FINANCE ──
-function getPeriodRange(p){
-  const t=today();
-  if(p==='week'){const d=new Date();d.setDate(d.getDate()-6);return{from:d.toISOString().split('T')[0],to:t,label:'Неделя'}}
-  if(p==='month')return{from:t.slice(0,7)+'-01',to:t,label:'Месяц'};
-  if(p==='quarter'){const d=new Date();d.setMonth(d.getMonth()-3);return{from:d.toISOString().split('T')[0],to:t,label:'Квартал'}}
-  if(p==='year')return{from:t.slice(0,4)+'-01-01',to:t,label:'Год'};
-  return{from:'2000-01-01',to:t,label:'Всё время'};
+function getPeriodRange(p) {
+  const t = today();
+  if (p === 'week') { const d = new Date(); d.setDate(d.getDate()-6); return { from: d.toISOString().split('T')[0], to: t, label: 'Неделя' }; }
+  if (p === 'month') return { from: t.slice(0,7)+'-01', to: t, label: 'Месяц' };
+  if (p === 'quarter') { const d = new Date(); d.setMonth(d.getMonth()-3); return { from: d.toISOString().split('T')[0], to: t, label: 'Квартал' }; }
+  if (p === 'year') return { from: t.slice(0,4)+'-01-01', to: t, label: 'Год' };
+  return { from: '2000-01-01', to: t, label: 'Всё время' };
 }
-window.setPeriod=function(p,el){currentPeriodFilter=p;document.querySelectorAll('.period-tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');updateFinPage()};
 
-async function updateFinPage(){
-  const[rs,es]=await Promise.all([getDocs(col('records')),getDocs(col('expenses'))]);
-  const all=rs.docs.map(d=>({id:d.id,...d.data()})),exps=es.docs.map(d=>d.data());
-  const t=today(),{from,to,label}=getPeriodRange(currentPeriodFilter);
-  const tSum=all.filter(r=>r.date===t).reduce((s,r)=>s+r.price,0);
-  const pAll=all.filter(r=>r.date>=from&&r.date<=to),pSum=pAll.reduce((s,r)=>s+r.price,0);
-  const avg=all.length?Math.round(all.reduce((s,r)=>s+r.price,0)/all.length):0;
-  document.getElementById('fin-today').textContent=tSum.toLocaleString()+' ₽';
-  document.getElementById('fin-period').textContent=pSum.toLocaleString()+' ₽';
-  document.getElementById('fin-period-label').textContent=label;
-  document.getElementById('fin-count').textContent=pAll.length;
-  document.getElementById('fin-avg').textContent=avg.toLocaleString()+' ₽';
-  const sm={};pAll.forEach(r=>{(r.services&&r.services.length?r.services:[{name:r.service,price:r.price}]).forEach(s=>{sm[s.name]=(sm[s.name]||0)+s.price})});
-  const ts=Object.entries(sm).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  document.getElementById('fin-top-services').innerHTML=ts.length?ts.map(([n,s],i)=>`<div class="top-item"><div class="top-rank">${i+1}</div><div class="top-label">${n}</div><div class="top-value">${s.toLocaleString()} ₽</div></div>`).join(''):'<div class="empty-state" style="padding:16px 0"><i class="fas fa-scissors"></i><p>Нет данных</p></div>';
-  const cm={};pAll.forEach(r=>{cm[r.name]=(cm[r.name]||0)+r.price});
-  const tc=Object.entries(cm).sort((a,b)=>b[1]-a[1]).slice(0,5);
-  document.getElementById('fin-top-clients').innerHTML=tc.length?tc.map(([n,s],i)=>`<div class="top-item"><div class="top-rank">${i+1}</div><div class="top-label">${n}</div><div class="top-value">${s.toLocaleString()} ₽</div></div>`).join(''):'<div class="empty-state" style="padding:16px 0"><i class="fas fa-users"></i><p>Нет данных</p></div>';
-  const pe=exps.filter(e=>e.date>=from&&e.date<=to),et=pe.reduce((s,e)=>s+e.amount,0),profit=pSum-et;
-  document.getElementById('fin-expense-summary').innerHTML=`<div class="client-stat-row"><span class="client-stat-label">Выручка</span><span class="client-stat-value" style="color:var(--green)">+${pSum.toLocaleString()} ₽</span></div><div class="client-stat-row"><span class="client-stat-label">Расходы</span><span class="client-stat-value" style="color:var(--red)">−${et.toLocaleString()} ₽</span></div><div class="client-stat-row"><span class="client-stat-label">Чистая прибыль</span><span class="client-stat-value" style="color:${profit>=0?'var(--green)':'var(--red)'}">${profit>=0?'+':''}${profit.toLocaleString()} ₽</span></div>${pe.length?`<div style="margin-top:8px;font-size:12px;color:var(--text-muted)">${pe.map(e=>`<div style="display:flex;justify-content:space-between;padding:3px 0"><span>${e.name}</span><span>−${e.amount.toLocaleString()} ₽</span></div>`).join('')}</div>`:''}`;
-  const sorted=[...pAll].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,20);
-  document.getElementById('fin-history').innerHTML=sorted.length?sorted.map(r=>`<div class="hist-item"><div class="hist-left"><div class="hist-name">${r.name}</div><div class="hist-meta">${r.service||'—'} · ${fmtDate(r.date)}${r.time?' · '+r.time.slice(0,5):''}</div></div><div class="hist-price">+${r.price.toLocaleString()} ₽</div></div>`).join(''):'<div class="empty-state"><i class="fas fa-wallet"></i><p>Нет записей за период</p></div>';
+window.setPeriod = function(p, el) {
+  currentPeriodFilter = p;
+  document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  updateFinPage();
+};
+
+function updateFinPage() {
+  const all = getAll('records');
+  const exps = getAll('expenses');
+  const t = today();
+  const { from, to, label } = getPeriodRange(currentPeriodFilter);
+  const tSum = all.filter(r => r.date === t).reduce((s,r) => s + r.price, 0);
+  const pAll = all.filter(r => r.date >= from && r.date <= to);
+  const pSum = pAll.reduce((s,r) => s + r.price, 0);
+  const avg = all.length ? Math.round(all.reduce((s,r) => s + r.price, 0) / all.length) : 0;
+
+  document.getElementById('fin-today').textContent = tSum.toLocaleString() + ' ₽';
+  document.getElementById('fin-period').textContent = pSum.toLocaleString() + ' ₽';
+  document.getElementById('fin-period-label').textContent = label;
+  document.getElementById('fin-count').textContent = pAll.length;
+  document.getElementById('fin-avg').textContent = avg.toLocaleString() + ' ₽';
+
+  const sm = {};
+  pAll.forEach(r => { (r.services && r.services.length ? r.services : [{name:r.service,price:r.price}]).forEach(s => { sm[s.name] = (sm[s.name]||0) + s.price; }); });
+  const ts = Object.entries(sm).sort((a,b) => b[1]-a[1]).slice(0,5);
+  document.getElementById('fin-top-services').innerHTML = ts.length ? ts.map(([n,s],i) => `<div class="top-item"><div class="top-rank">${i+1}</div><div class="top-label">${n}</div><div class="top-value">${s.toLocaleString()} ₽</div></div>`).join('') : '<div class="empty-state" style="padding:16px 0"><i class="fas fa-scissors"></i><p>Нет данных</p></div>';
+
+  const cm = {};
+  pAll.forEach(r => { cm[r.name] = (cm[r.name]||0) + r.price; });
+  const tc = Object.entries(cm).sort((a,b) => b[1]-a[1]).slice(0,5);
+  document.getElementById('fin-top-clients').innerHTML = tc.length ? tc.map(([n,s],i) => `<div class="top-item"><div class="top-rank">${i+1}</div><div class="top-label">${n}</div><div class="top-value">${s.toLocaleString()} ₽</div></div>`).join('') : '<div class="empty-state" style="padding:16px 0"><i class="fas fa-users"></i><p>Нет данных</p></div>';
+
+  const pe = exps.filter(e => e.date >= from && e.date <= to);
+  const et = pe.reduce((s,e) => s + e.amount, 0);
+  const profit = pSum - et;
+  document.getElementById('fin-expense-summary').innerHTML = `<div class="client-stat-row"><span class="client-stat-label">Выручка</span><span class="client-stat-value" style="color:var(--green)">+${pSum.toLocaleString()} ₽</span></div><div class="client-stat-row"><span class="client-stat-label">Расходы</span><span class="client-stat-value" style="color:var(--red)">−${et.toLocaleString()} ₽</span></div><div class="client-stat-row"><span class="client-stat-label">Чистая прибыль</span><span class="client-stat-value" style="color:${profit>=0?'var(--green)':'var(--red)'}">${profit>=0?'+':''}${profit.toLocaleString()} ₽</span></div>${pe.length ? `<div style="margin-top:8px;font-size:12px;color:var(--text-muted)">${pe.map(e=>`<div style="display:flex;justify-content:space-between;padding:3px 0"><span>${e.name}</span><span>−${e.amount.toLocaleString()} ₽</span></div>`).join('')}</div>` : ''}`;
+
+  const sorted = [...pAll].sort((a,b) => b.date.localeCompare(a.date)).slice(0,20);
+  document.getElementById('fin-history').innerHTML = sorted.length ? sorted.map(r => `<div class="hist-item"><div class="hist-left"><div class="hist-name">${r.name}</div><div class="hist-meta">${r.service||'—'} · ${fmtDate(r.date)}${r.time?' · '+r.time.slice(0,5):''}</div></div><div class="hist-price">+${r.price.toLocaleString()} ₽</div></div>`).join('') : '<div class="empty-state"><i class="fas fa-wallet"></i><p>Нет записей за период</p></div>';
+
   buildChart(all);
 }
 
-function buildChart(all){
-  const isL=document.body.classList.contains('light');
-  const labels=[],values=[],um=currentPeriodFilter==='quarter'||currentPeriodFilter==='year'||currentPeriodFilter==='all';
-  const cnt=currentPeriodFilter==='year'?12:currentPeriodFilter==='quarter'?12:7;
-  if(um){for(let i=cnt-1;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);const mo=d.toISOString().slice(0,7);labels.push(d.toLocaleDateString('ru',{month:'short'}));values.push(all.filter(r=>r.date.startsWith(mo)).reduce((s,r)=>s+r.price,0))}}
-  else{for(let i=cnt-1;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const ds=d.toISOString().split('T')[0];labels.push(d.toLocaleDateString('ru',{day:'numeric',month:'short'}));values.push(all.filter(r=>r.date===ds).reduce((s,r)=>s+r.price,0))}}
-  const ctx=document.getElementById('weekChart').getContext('2d');
-  if(weekChartInstance)weekChartInstance.destroy();
-  const clr=isL?'#6750A4':'#D0BCFF';
-  weekChartInstance=new Chart(ctx,{type:'bar',data:{labels,datasets:[{data:values,backgroundColor:values.map((_,i)=>i===values.length-1?clr:clr+'55'),borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw.toLocaleString()+' ₽'}}},scales:{x:{grid:{display:false},ticks:{color:isL?'#49454F':'#CAC4D0',font:{family:'Nunito',weight:'700'},maxRotation:45}},y:{grid:{color:isL?'rgba(0,0,0,.05)':'rgba(255,255,255,.06)'},ticks:{color:isL?'#49454F':'#CAC4D0',font:{family:'Nunito'},callback:v=>v===0?'0':v.toLocaleString()}}}}});
+function buildChart(all) {
+  const isL = document.body.classList.contains('light');
+  const labels = [], values = [];
+  const um = currentPeriodFilter === 'quarter' || currentPeriodFilter === 'year' || currentPeriodFilter === 'all';
+  const cnt = currentPeriodFilter === 'year' ? 12 : currentPeriodFilter === 'quarter' ? 12 : 7;
+  if (um) {
+    for (let i = cnt-1; i >= 0; i--) { const d = new Date(); d.setMonth(d.getMonth()-i); const mo = d.toISOString().slice(0,7); labels.push(d.toLocaleDateString('ru',{month:'short'})); values.push(all.filter(r=>r.date.startsWith(mo)).reduce((s,r)=>s+r.price,0)); }
+  } else {
+    for (let i = cnt-1; i >= 0; i--) { const d = new Date(); d.setDate(d.getDate()-i); const ds = d.toISOString().split('T')[0]; labels.push(d.toLocaleDateString('ru',{day:'numeric',month:'short'})); values.push(all.filter(r=>r.date===ds).reduce((s,r)=>s+r.price,0)); }
+  }
+  const ctx = document.getElementById('weekChart').getContext('2d');
+  if (weekChartInstance) weekChartInstance.destroy();
+  const clr = isL ? '#6750A4' : '#D0BCFF';
+  weekChartInstance = new Chart(ctx, { type:'bar', data:{ labels, datasets:[{ data:values, backgroundColor:values.map((_,i)=>i===values.length-1?clr:clr+'55'), borderRadius:8, borderSkipped:false }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>c.raw.toLocaleString()+' ₽'}} }, scales:{ x:{grid:{display:false},ticks:{color:isL?'#49454F':'#CAC4D0',font:{family:'Nunito',weight:'700'},maxRotation:45}}, y:{grid:{color:isL?'rgba(0,0,0,.05)':'rgba(255,255,255,.06)'},ticks:{color:isL?'#49454F':'#CAC4D0',font:{family:'Nunito'},callback:v=>v===0?'0':v.toLocaleString()}} } } });
 }
 
-async function updateGlobalTotal(){
-  if(!currentUser)return;
-  const snap=await getDocs(col('records'));
-  const m=snap.docs.map(d=>d.data()).filter(r=>r.date&&r.date.startsWith(today().slice(0,7))).reduce((s,r)=>s+r.price,0);
-  document.getElementById('quick-total').textContent=m.toLocaleString()+' ₽';
+function updateGlobalTotal() {
+  const m = getAll('records').filter(r => r.date && r.date.startsWith(today().slice(0,7))).reduce((s,r) => s + r.price, 0);
+  document.getElementById('quick-total').textContent = m.toLocaleString() + ' ₽';
 }
 
 // ── THEME / SETTINGS ──
-window.toggleTheme=async function(){
-  const isLight=document.body.classList.toggle('light');
-  document.getElementById('theme-toggle').classList.toggle('on',isLight);
-  await setDoc(metaDoc(),{theme:isLight?'light':'dark'},{merge:true});
-  if(weekChartInstance)updateFinPage();
+window.toggleTheme = function() {
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('theme-toggle').classList.toggle('on', isLight);
+  DB.set('settings', { ...DB.getObj('settings'), theme: isLight ? 'light' : 'dark' });
+  if (weekChartInstance) updateFinPage();
 };
-async function loadSettings(){
-  const snap=await getDoc(metaDoc());
-  if(snap.exists()){
-    if(snap.data().theme==='light'){document.body.classList.add('light');document.getElementById('theme-toggle').classList.add('on')}
-    document.getElementById('f-tpl').value=snap.data().tpl||"Привет, {name}! Напоминаем о записи на {service} {date} в {time}.";
-  } else document.getElementById('f-tpl').value="Привет, {name}! Напоминаем о записи на {service} {date} в {time}.";
+
+function loadSettings() {
+  const s = DB.getObj('settings');
+  if (s.theme === 'light') { document.body.classList.add('light'); document.getElementById('theme-toggle').classList.add('on'); }
+  document.getElementById('f-tpl').value = s.tpl || "Привет, {name}! Напоминаем о записи на {service} {date} в {time}.";
 }
-window.saveTpl=async function(){await setDoc(metaDoc(),{tpl:document.getElementById('f-tpl').value},{merge:true});showToast('✅ Шаблон сохранён')};
+
+window.saveTpl = function() {
+  DB.set('settings', { ...DB.getObj('settings'), tpl: document.getElementById('f-tpl').value });
+  showToast('✅ Шаблон сохранён');
+};
+
+// ── DATA EXPORT / CLEAR ──
+window.exportData = function() {
+  const data = { records: getAll('records'), clients: getAll('clients'), services: getAll('services'), expenses: getAll('expenses') };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'masters-crm-export-' + today() + '.json';
+  a.click();
+  showToast('✅ Данные экспортированы');
+};
+
+window.clearAllData = function() {
+  if (!confirm('Удалить ВСЕ данные? Это действие нельзя отменить!')) return;
+  ['records','clients','services','expenses'].forEach(k => DB.set(k, []));
+  calendar.refetchEvents();
+  updateGlobalTotal();
+  showToast('🗑️ Все данные очищены');
+};
 
 // ── CONTACTS ──
-window.pickFromContacts=async function(){
-  if(!('contacts' in navigator&&'ContactsManager' in window)){showToast('⚠️ Браузер не поддерживает контакты');return}
-  try{
-    const c=await navigator.contacts.select(['name','tel'],{multiple:false});
-    if(!c||!c.length)return;
-    const name=(c[0].name&&c[0].name[0])?c[0].name[0].trim():'';
-    const phone=(c[0].tel&&c[0].tel[0])?c[0].tel[0].trim():'';
-    if(name)document.getElementById('f-name').value=name;
-    if(phone)document.getElementById('f-phone').value=phone;
-    hideAC();showToast('👤 Контакт выбран: '+name);
-  }catch(e){if(e.name!=='AbortError')showToast('❌ Не удалось открыть контакты')}
+window.pickFromContacts = async function() {
+  if (!('contacts' in navigator && 'ContactsManager' in window)) { showToast('⚠️ Браузер не поддерживает контакты'); return; }
+  try {
+    const c = await navigator.contacts.select(['name','tel'], { multiple: false });
+    if (!c || !c.length) return;
+    const name = (c[0].name && c[0].name[0]) ? c[0].name[0].trim() : '';
+    const phone = (c[0].tel && c[0].tel[0]) ? c[0].tel[0].trim() : '';
+    if (name) document.getElementById('f-name').value = name;
+    if (phone) document.getElementById('f-phone').value = phone;
+    hideAC();
+    showToast('👤 Контакт выбран: ' + name);
+  } catch(e) { if (e.name !== 'AbortError') showToast('❌ Не удалось открыть контакты'); }
 };
 
 // ── REMINDERS ──
-function checkReminders(){
-  if(!('Notification' in window))return;
-  if(Notification.permission==='default')Notification.requestPermission();
-  setInterval(async()=>{
-    if(!currentUser||Notification.permission!=='granted')return;
-    const snap=await getDocs(col('records')),now=new Date();
-    snap.docs.forEach(d=>{
-      const r=d.data();if(!r.remind||!r.time||!r.date)return;
-      const diff=(new Date(r.date+'T'+r.time)-now)/60000;
-      if(diff>0&&diff<=Number(r.remind)&&diff>Number(r.remind)-1)new Notification('Masters CRM',{body:`${r.name} — ${r.service} в ${r.time}`});
+function checkReminders() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'default') Notification.requestPermission();
+  setInterval(() => {
+    if (Notification.permission !== 'granted') return;
+    const now = new Date();
+    getAll('records').forEach(r => {
+      if (!r.remind || !r.time || !r.date) return;
+      const diff = (new Date(r.date + 'T' + r.time) - now) / 60000;
+      if (diff > 0 && diff <= Number(r.remind) && diff > Number(r.remind) - 1)
+        new Notification('Masters CRM', { body: `${r.name} — ${r.service} в ${r.time}` });
     });
-  },60000);
+  }, 60000);
 }
 
 // ── PWA ──
@@ -1019,21 +1037,35 @@ function checkReminders(){
   const m={name:"Masters CRM PRO",short_name:"Masters CRM",start_url:"./",display:"standalone",orientation:"portrait",background_color:"#141218",theme_color:"#6750A4",icons:[{src:iu,sizes:"512x512",type:"image/svg+xml",purpose:"any maskable"}]};
   document.getElementById('pwa-manifest').href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/manifest+json'}));
 })();
-if('serviceWorker' in navigator){
-  const sw=`const C='mcrm-v3';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css','https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js','https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js']).catch(()=>{})));self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n!==C).map(n=>caches.delete(n)))));self.clients.claim()});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))});`;
+
+if ('serviceWorker' in navigator) {
+  const sw=`const C='mcrm-v4';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css','https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js','https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js']).catch(()=>{})));self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n!==C).map(n=>caches.delete(n)))));self.clients.claim()});self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)))});`;
   navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'})),{scope:'./'});
 }
-let dp=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;
-  if(document.getElementById('install-banner'))return;
-  const b=document.createElement('div');b.id='install-banner';
-  b.style.cssText='position:fixed;bottom:calc(var(--nav-height) + 12px);left:12px;right:12px;background:#6750A4;color:#fff;border-radius:20px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:9000;box-shadow:0 4px 24px rgba(0,0,0,.4);font-family:Nunito,sans-serif;';
-  b.innerHTML=`<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:24px;">✂️</span><div><div style="font-weight:900;font-size:14px;">Установить приложение</div><div style="font-size:11px;opacity:.8;">Работает офлайн</div></div></div><div style="display:flex;gap:8px;"><button onclick="installPWA()" style="background:#fff;color:#6750A4;border:none;padding:8px 16px;border-radius:100px;font-weight:800;font-size:13px;cursor:pointer;font-family:Nunito,sans-serif;">Установить</button><button onclick="this.closest('#install-banner').remove()" style="background:rgba(255,255,255,.2);color:#fff;border:none;padding:8px 12px;border-radius:100px;font-size:13px;cursor:pointer;">✕</button></div>`;
+
+let dp = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); dp = e;
+  if (document.getElementById('install-banner')) return;
+  const b = document.createElement('div'); b.id = 'install-banner';
+  b.style.cssText = 'position:fixed;bottom:calc(var(--nav-height) + 12px);left:12px;right:12px;background:#6750A4;color:#fff;border-radius:20px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;z-index:9000;box-shadow:0 4px 24px rgba(0,0,0,.4);font-family:Nunito,sans-serif;';
+  b.innerHTML = `<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:24px;">✂️</span><div><div style="font-weight:900;font-size:14px;">Установить приложение</div><div style="font-size:11px;opacity:.8;">Работает офлайн</div></div></div><div style="display:flex;gap:8px;"><button onclick="installPWA()" style="background:#fff;color:#6750A4;border:none;padding:8px 16px;border-radius:100px;font-weight:800;font-size:13px;cursor:pointer;font-family:Nunito,sans-serif;">Установить</button><button onclick="this.closest('#install-banner').remove()" style="background:rgba(255,255,255,.2);color:#fff;border:none;padding:8px 12px;border-radius:100px;font-size:13px;cursor:pointer;">✕</button></div>`;
   document.body.appendChild(b);
 });
-window.installPWA=async function(){if(!dp)return;dp.prompt();const r=await dp.userChoice;dp=null;document.getElementById('install-banner')?.remove();if(r.outcome==='accepted')showToast('✅ Устанавливается!')};
-window.addEventListener('appinstalled',()=>{document.getElementById('install-banner')?.remove();showToast('🎉 Приложение установлено!')});
 
+window.installPWA = async function() {
+  if (!dp) return;
+  dp.prompt();
+  const r = await dp.userChoice;
+  dp = null;
+  document.getElementById('install-banner')?.remove();
+  if (r.outcome === 'accepted') showToast('✅ Устанавливается!');
+};
+
+window.addEventListener('appinstalled', () => { document.getElementById('install-banner')?.remove(); showToast('🎉 Приложение установлено!'); });
+
+// ── START ──
+initApp();
 </script>
 </body>
 </html>
