@@ -1511,9 +1511,22 @@ async function sendTelegramMessage(text){
   }catch(e){console.warn('TG error',e)}
 }
 
-// Generate confirmation link — direct website link
+// Generate confirmation link — record data encoded directly in URL
 function makeConfirmLink(recordId){
-  return`https://mdvxdmitry.github.io/masters-crm/?confirm=${recordId}`;
+  const r=getItem('records',recordId);
+  if(!r)return'';
+  // Encode key record data into the URL so client device doesn't need localStorage
+  const payload={
+    id:recordId,
+    name:r.name,
+    service:r.service||'',
+    date:r.date||'',
+    time:r.time||'',
+    price:r.price||0,
+    phone:r.phone||''
+  };
+  const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  return`https://mdvxdmitry.github.io/masters-crm/?crm_confirm=${encoded}`;
 }
 
 // Send SMS reminder with website confirmation link
@@ -1529,27 +1542,35 @@ window.sendConfirmReminder=function(recId){
   showToast('📱 СМС открыт!');
 };
 
-// Check URL params — runs when client opens the link
+// Check URL params — runs when client opens the link on THEIR device
 function checkConfirmationParams(){
   const params=new URLSearchParams(window.location.search);
-  const recId=params.get('confirm');
-  if(!recId)return;
+  const encoded=params.get('crm_confirm');
+  if(!encoded)return;
   // Clean URL immediately
   window.history.replaceState({},'',window.location.pathname);
-  showConfirmPage(recId);
+  try{
+    const payload=JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    showConfirmPage(payload);
+  }catch(e){
+    showConfirmPageError();
+  }
 }
 
-function showConfirmPage(recId){
-  const r=getItem('records',recId);
+function showConfirmPageError(){
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:var(--surface);display:flex;align-items:center;justify-content:center;padding:20px;font-family:Nunito,sans-serif;';
+  overlay.innerHTML=`<div class="confirm-card"><div class="confirm-logo">❓</div><div class="confirm-title">Ссылка недействительна</div><div class="confirm-sub">Попросите мастера отправить новое напоминание</div></div>`;
+  document.body.appendChild(overlay);
+}
+
+function showConfirmPage(payload){
   const overlay=document.createElement('div');
   overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:var(--surface);display:flex;align-items:center;justify-content:center;padding:20px;font-family:Nunito,sans-serif;overflow-y:auto;';
 
-  if(!r){
-    overlay.innerHTML=`<div class="confirm-card"><div class="confirm-logo">❓</div><div class="confirm-title">Запись не найдена</div><div class="confirm-sub">Ссылка устарела или запись была удалена</div></div>`;
-    document.body.appendChild(overlay);
-    return;
-  }
-  if(r.confirmed==='confirm'){
+  // Check if already confirmed (stored on master device — skip if client device)
+  const alreadyConfirmed=getItem('records',payload.id)&&getItem('records',payload.id).confirmed==='confirm';
+  if(alreadyConfirmed){
     overlay.innerHTML=`<div class="confirm-card"><div class="confirm-logo">✅</div><div class="confirm-title">Уже подтверждено</div><div class="confirm-sub">Вы уже подтвердили эту запись. Ждём вас!</div></div>`;
     document.body.appendChild(overlay);
     return;
@@ -1563,18 +1584,18 @@ function showConfirmPage(recId){
       <div style="background:var(--surface2);border-radius:16px;padding:14px;margin-bottom:4px;text-align:left">
         <div class="confirm-info-row">
           <div class="confirm-info-icon"><i class="fas fa-calendar"></i></div>
-          <div><div class="confirm-info-text">${fmtDate(r.date)}</div><div class="confirm-info-sub">${r.time||'Время не указано'}</div></div>
+          <div><div class="confirm-info-text">${fmtDate(payload.date)}</div><div class="confirm-info-sub">${payload.time||'Время не указано'}</div></div>
         </div>
         <div class="confirm-info-row">
           <div class="confirm-info-icon"><i class="fas fa-scissors"></i></div>
-          <div><div class="confirm-info-text">${r.service||'—'}</div><div class="confirm-info-sub">${r.price?r.price.toLocaleString()+' ₽':''}</div></div>
+          <div><div class="confirm-info-text">${payload.service||'—'}</div><div class="confirm-info-sub">${payload.price?payload.price.toLocaleString()+' ₽':''}</div></div>
         </div>
         <div class="confirm-info-row">
           <div class="confirm-info-icon"><i class="fas fa-user"></i></div>
-          <div><div class="confirm-info-text">${r.name}</div></div>
+          <div><div class="confirm-info-text">${payload.name}</div></div>
         </div>
       </div>
-      <button class="btn-confirm" id="do-confirm-btn" style="background:var(--green);color:#fff;border:none;padding:16px 20px;border-radius:100px;font-weight:900;font-size:15px;width:100%;margin-top:18px;cursor:pointer;font-family:Nunito,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <button id="do-confirm-btn" style="background:#9DD67A;color:#fff;border:none;padding:16px 20px;border-radius:100px;font-weight:900;font-size:15px;width:100%;margin-top:18px;cursor:pointer;font-family:Nunito,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;">
         ✅ Подтверждаю запись
       </button>
       <div id="confirm-result" style="display:none;margin-top:16px;font-size:14px;font-weight:700;text-align:center"></div>
@@ -1584,25 +1605,26 @@ function showConfirmPage(recId){
 
   document.getElementById('do-confirm-btn').onclick=async function(){
     this.disabled=true;
-    this.textContent='⏳ Сохраняем...';
+    this.textContent='⏳ Отправляем...';
 
-    // Mark confirmed in localStorage
-    updateItem('records',recId,{confirmed:'confirm',confirmedAt:new Date().toISOString()});
+    // Notify master via Telegram — this works from ANY device
+    await sendTelegramMessage(`✅ <b>${payload.name}</b> подтвердил(а) запись\n\n📅 ${fmtDate(payload.date)} в ${payload.time||'—'}\n💅 ${payload.service}\n📱 ${payload.phone||'—'}`);
 
-    // Save to inbox
-    const msgData={id:DB.id(),recId,name:r.name,action:'confirm',service:r.service,date:r.date,time:r.time,ts:new Date().toISOString(),read:false};
-    const msgs=DB.get('inbox');msgs.unshift(msgData);if(msgs.length>50)msgs.splice(50);DB.set('inbox',msgs);
-    updateMsgBadge();
-
-    // Notify master via Telegram
-    await sendTelegramMessage(`✅ <b>${r.name}</b> подтвердил(а) запись\n\n📅 ${fmtDate(r.date)} в ${r.time||'—'}\n💅 ${r.service}\n📱 ${r.phone||'—'}`);
+    // Also try to mark confirmed in localStorage (works if same device)
+    const rec=getItem('records',payload.id);
+    if(rec){
+      updateItem('records',payload.id,{confirmed:'confirm',confirmedAt:new Date().toISOString()});
+      const msgData={id:DB.id(),recId:payload.id,name:payload.name,action:'confirm',service:payload.service,date:payload.date,time:payload.time,ts:new Date().toISOString(),read:false};
+      const msgs=DB.get('inbox');msgs.unshift(msgData);if(msgs.length>50)msgs.splice(50);DB.set('inbox',msgs);
+      updateMsgBadge();
+    }
 
     // Show success
     this.style.display='none';
     const res=document.getElementById('confirm-result');
     res.style.display='block';
-    res.style.color='var(--green)';
-    res.innerHTML='🎉 Запись подтверждена!<br><span style="font-size:12px;font-weight:600;color:var(--text-muted)">Ждём вас!</span>';
+    res.style.color='#9DD67A';
+    res.innerHTML='🎉 Запись подтверждена!<br><span style="font-size:12px;font-weight:600;opacity:0.7">Ждём вас!</span>';
   };
 }
 
