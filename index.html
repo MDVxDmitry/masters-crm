@@ -540,10 +540,11 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
       <button class="btn-s" onclick="testTgBot()" style="margin-top:8px;width:100%;justify-content:center"><i class="fab fa-telegram"></i> Проверить соединение</button>
     </div>
     <div class="card">
-      <div class="card-title">Шаблон СМС</div>
+      <div class="card-title">Шаблоны СМС</div>
       <p style="font-size:11px;color:var(--text-muted);margin-bottom:7px">Переменные: <span class="chip">{name}</span> <span class="chip">{service}</span> <span class="chip">{date}</span> <span class="chip">{time}</span></p>
-      <div class="ig"><textarea id="f-tpl" rows="3"></textarea></div>
-      <button class="btn-p" onclick="saveTpl()"><i class="fas fa-save"></i> Сохранить</button>
+      <div class="ig"><label style="font-weight:800;color:var(--primary)">📩 Напоминание (без ссылки)</label><textarea id="f-tpl" rows="3"></textarea></div>
+      <div class="ig" style="margin-top:8px"><label style="font-weight:800;color:var(--primary)">🔗 Подтверждение (со ссылкой)</label><textarea id="f-tpl-confirm" rows="3"></textarea></div>
+      <button class="btn-p" onclick="saveTpl()"><i class="fas fa-save"></i> Сохранить шаблоны</button>
     </div>
     <div class="card">
       <div class="card-title">Рабочие часы</div>
@@ -827,7 +828,7 @@ function renderRecCards(records,container,tpl,dateStr){
       ?`<div class="rec-svc">${sa[0].name} <span class="rec-price">+${r.price.toLocaleString()} ₽</span></div>`
       :`<div class="rec-svc-list">${sa.map(s=>`<div class="rec-svc-row"><span>${s.name}</span><span class="rec-price">+${s.price.toLocaleString()} ₽</span></div>`).join('')}<div class="rec-svc-total">Итого: <b>${r.price.toLocaleString()} ₽</b></div></div>`;
     const div=document.createElement('div');div.className=`rec-card s-${st}`;
-    div.innerHTML=`<div class="rec-hdr"><div class="rec-name" onclick="openClientHistory('${r.name.replace(/'/g,"\\'")}')">👤 ${r.name}</div>${r.time?`<div class="rec-time-badge">${r.time.slice(0,5)}</div>`:''}</div>${sh}<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:3px"><span class="badge badge-${st}" style="cursor:pointer" onclick="cycleStatus('${r.id}','${dateStr}')">${SL[st]}</span>${r.remind?`<span class="rem-pill"><i class="fas fa-bell"></i> за ${r.remind>=60?(r.remind/60)+'ч':r.remind+'мин'}</span>`:''} ${r.recur?`<span class="recur-pill"><i class="fas fa-redo"></i> повтор</span>`:''}</div>${r.note?`<div class="note-pill"><i class="fas fa-sticky-note"></i><span>${r.note}</span></div>`:''}<div class="rec-actions">${r.phone?`<button class="btn-sms" onclick="sendConfirmReminder('${r.id}')"><i class="fas fa-paper-plane"></i> Напомнить</button>`:''} ${r.phone?`<a href="tel:${r.phone}" class="btn-sms" style="background:linear-gradient(135deg,#6750A4,#9B72CF)"><i class="fas fa-phone"></i></a>`:''}<button class="btn-ed" onclick="openEdit('${r.id}')"><i class="fas fa-pen"></i> Изменить</button><button class="btn-del" onclick="deleteRec('${r.id}','${r.date}')"><i class="fas fa-trash"></i></button></div>`;
+    div.innerHTML=`<div class="rec-hdr"><div class="rec-name" onclick="openClientHistory('${r.name.replace(/'/g,"\\'")}')">👤 ${r.name}</div>${r.time?`<div class="rec-time-badge">${r.time.slice(0,5)}</div>`:''}</div>${sh}<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:3px"><span class="badge badge-${st}" style="cursor:pointer" onclick="cycleStatus('${r.id}','${dateStr}')">${SL[st]}</span>${r.remind?`<span class="rem-pill"><i class="fas fa-bell"></i> за ${r.remind>=60?(r.remind/60)+'ч':r.remind+'мин'}</span>`:''} ${r.recur?`<span class="recur-pill"><i class="fas fa-redo"></i> повтор</span>`:''}</div>${r.note?`<div class="note-pill"><i class="fas fa-sticky-note"></i><span>${r.note}</span></div>`:''}<div class="rec-actions">${r.phone?`<button class="btn-sms" style="background:linear-gradient(135deg,#7B61FF,#9B72CF)" onclick="sendSimpleReminder('${r.id}')"><i class="fas fa-comment-dots"></i> Напомнить</button>`:''} ${r.phone?`<button class="btn-sms" onclick="sendConfirmReminder('${r.id}')"><i class="fas fa-paper-plane"></i> Подтвердить</button>`:''} ${r.phone?`<a href="tel:${r.phone}" class="btn-sms" style="background:linear-gradient(135deg,#6750A4,#9B72CF)"><i class="fas fa-phone"></i></a>`:''}<button class="btn-ed" onclick="openEdit('${r.id}')"><i class="fas fa-pen"></i> Изменить</button><button class="btn-del" onclick="deleteRec('${r.id}','${r.date}')"><i class="fas fa-trash"></i></button></div>`;
     container.appendChild(div);
   });
 }
@@ -1292,11 +1293,18 @@ window.toggleTheme=function(){
 function loadSettings(){
   const s=DB.getObj('settings');
   if(s.theme==='light'){document.body.classList.add('light');document.getElementById('theme-toggle').classList.add('on')}
-  document.getElementById('f-tpl').value=s.tpl||"Привет, {name}! Напоминаем о записи на {service} {date} в {time}.";
+  document.getElementById('f-tpl').value=s.tpl||'Здравствуйте, {name}! Напоминаем о вашей записи: {service}, {date} в {time}.';
+  document.getElementById('f-tpl-confirm').value=s.tplConfirm||'Здравствуйте, {name}! Напоминаем о записи: {service}, {date} в {time}. Подтвердите запись: {link}';
   if(s.workStart)document.getElementById('work-start').value=s.workStart;
   if(s.workEnd)document.getElementById('work-end').value=s.workEnd;
 }
-window.saveTpl=function(){DB.set('settings',{...DB.getObj('settings'),tpl:document.getElementById('f-tpl').value});showToast('✅ Шаблон сохранён')};
+window.saveTpl=function(){
+  DB.set('settings',{...DB.getObj('settings'),
+    tpl:document.getElementById('f-tpl').value,
+    tplConfirm:document.getElementById('f-tpl-confirm').value
+  });
+  showToast('✅ Шаблоны сохранены');
+};
 window.saveWorkHours=function(){DB.set('settings',{...DB.getObj('settings'),workStart:document.getElementById('work-start').value,workEnd:document.getElementById('work-end').value});showToast('✅ Рабочие часы сохранены')};
 
 // ════════════════════════════════════════
@@ -1501,21 +1509,43 @@ async function sendTelegramMessage(text){
 function makeConfirmLink(recordId){
   const r=getItem('records',recordId);
   if(!r)return'';
-  // Minimal data: id~date~time~service~price
   const raw=`${recordId}~${r.date||''}~${r.time||''}~${r.service||''}~${r.price||0}~${r.name||''}~${r.phone||''}`;
   const encoded=btoa(unescape(encodeURIComponent(raw))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
   return`https://mdvxdmitry.github.io/masters-crm/?c=${encoded}`;
 }
 
-// Send SMS reminder with website confirmation link
-window.sendConfirmReminder=function(recId){
+// Shorten URL via TinyURL
+async function shortenUrl(url){
+  try{
+    const r=await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`);
+    if(r.ok){const t=await r.text();if(t.startsWith('https://'))return t.trim();}
+  }catch(e){}
+  return url; // fallback to original
+}
+
+// Send simple reminder (no confirmation link)
+window.sendSimpleReminder=function(recId){
   const r=getItem('records',recId);
   if(!r){showToast('⚠️ Запись не найдена');return}
   if(!r.phone){showToast('⚠️ У клиента нет телефона');return}
-  const confirmLink=makeConfirmLink(recId);
-  const dateStr=fmtDate(r.date);
-  const svcName=r.service||'процедуру';
-  const msg=`Здравствуйте, ${r.name}! Напоминаем о записи: ${svcName}, ${dateStr} в ${r.time||'—'}. Подтвердите запись: ${confirmLink}`;
+  const s=DB.getObj('settings');
+  const tpl=s.tpl||'Здравствуйте, {name}! Напоминаем о вашей записи: {service}, {date} в {time}.';
+  const msg=tpl.replace(/{name}/g,r.name).replace(/{service}/g,r.service||'').replace(/{date}/g,fmtDate(r.date)).replace(/{time}/g,r.time||'—');
+  window.location.href=`sms:${r.phone}?body=${encodeURIComponent(msg)}`;
+  showToast('📱 СМС открыт!');
+};
+
+// Send confirmation reminder (with short link)
+window.sendConfirmReminder=async function(recId){
+  const r=getItem('records',recId);
+  if(!r){showToast('⚠️ Запись не найдена');return}
+  if(!r.phone){showToast('⚠️ У клиента нет телефона');return}
+  showToast('⏳ Создаём ссылку...');
+  const longLink=makeConfirmLink(recId);
+  const shortLink=await shortenUrl(longLink);
+  const s=DB.getObj('settings');
+  const tpl=s.tplConfirm||'Здравствуйте, {name}! Напоминаем о записи: {service}, {date} в {time}. Подтвердите запись: {link}';
+  const msg=tpl.replace(/{name}/g,r.name).replace(/{service}/g,r.service||'').replace(/{date}/g,fmtDate(r.date)).replace(/{time}/g,r.time||'—').replace(/{link}/g,shortLink);
   window.location.href=`sms:${r.phone}?body=${encodeURIComponent(msg)}`;
   showToast('📱 СМС открыт!');
 };
