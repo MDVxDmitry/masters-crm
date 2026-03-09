@@ -1574,13 +1574,13 @@ function makeConfirmLink(recordId){
   return`https://mdvxdmitry.github.io/masters-crm/?c=${encoded}`;
 }
 
-// Shorten URL via TinyURL
+// Shorten URL via clck.ru (Yandex, no ads)
 async function shortenUrl(url){
   try{
-    const r=await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(url)}`);
+    const r=await fetch(`https://clck.ru/--?url=${encodeURIComponent(url)}`);
     if(r.ok){const t=await r.text();if(t.startsWith('https://'))return t.trim();}
   }catch(e){}
-  return url; // fallback to original
+  return url;
 }
 
 // Send simple reminder (no confirmation link)
