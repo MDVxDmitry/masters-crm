@@ -665,6 +665,14 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
   </div>
 </div>
 
+<!-- ════ RECORD DETAIL MODAL ════ -->
+<div class="modal-overlay" id="recDetailModal">
+  <div class="modal-sheet">
+    <div class="sh-handle"></div>
+    <div id="rec-detail-content"></div>
+  </div>
+</div>
+
 <script>
 // ════════════════════════════════════════
 // LOCAL STORAGE DB
@@ -828,7 +836,12 @@ function renderRecCards(records,container,tpl,dateStr){
       ?`<div class="rec-svc">${sa[0].name} <span class="rec-price">+${r.price.toLocaleString()} ₽</span></div>`
       :`<div class="rec-svc-list">${sa.map(s=>`<div class="rec-svc-row"><span>${s.name}</span><span class="rec-price">+${s.price.toLocaleString()} ₽</span></div>`).join('')}<div class="rec-svc-total">Итого: <b>${r.price.toLocaleString()} ₽</b></div></div>`;
     const div=document.createElement('div');div.className=`rec-card s-${st}`;
-    div.innerHTML=`<div class="rec-hdr"><div class="rec-name" onclick="openClientHistory('${r.name.replace(/'/g,"\\'")}')">👤 ${r.name}</div>${r.time?`<div class="rec-time-badge">${r.time.slice(0,5)}</div>`:''}</div>${sh}<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:3px"><span class="badge badge-${st}" style="cursor:pointer" onclick="cycleStatus('${r.id}','${dateStr}')">${SL[st]}</span>${r.remind?`<span class="rem-pill"><i class="fas fa-bell"></i> за ${r.remind>=60?(r.remind/60)+'ч':r.remind+'мин'}</span>`:''} ${r.recur?`<span class="recur-pill"><i class="fas fa-redo"></i> повтор</span>`:''}</div>${r.note?`<div class="note-pill"><i class="fas fa-sticky-note"></i><span>${r.note}</span></div>`:''}<div class="rec-actions">${r.phone?`<button class="btn-sms" style="background:linear-gradient(135deg,#7B61FF,#9B72CF)" onclick="sendSimpleReminder('${r.id}')"><i class="fas fa-comment-dots"></i> Напомнить</button>`:''} ${r.phone?`<button class="btn-sms" onclick="sendConfirmReminder('${r.id}')"><i class="fas fa-paper-plane"></i> Подтвердить</button>`:''} ${r.phone?`<a href="tel:${r.phone}" class="btn-sms" style="background:linear-gradient(135deg,#6750A4,#9B72CF)"><i class="fas fa-phone"></i></a>`:''}<button class="btn-ed" onclick="openEdit('${r.id}')"><i class="fas fa-pen"></i> Изменить</button><button class="btn-del" onclick="deleteRec('${r.id}','${r.date}')"><i class="fas fa-trash"></i></button></div>`;
+    div.style.cursor='pointer';
+    div.onclick=function(e){
+      if(e.target.closest('button')||e.target.closest('a'))return;
+      openRecDetail(r.id);
+    };
+    div.innerHTML=`<div class="rec-hdr"><div class="rec-name">👤 ${r.name}</div>${r.time?`<div class="rec-time-badge">${r.time.slice(0,5)}</div>`:''}</div>${sh}<div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:3px"><span class="badge badge-${st}" style="cursor:pointer" onclick="event.stopPropagation();cycleStatus('${r.id}','${dateStr}')">${SL[st]}</span>${r.remind?`<span class="rem-pill"><i class="fas fa-bell"></i> за ${r.remind>=60?(r.remind/60)+'ч':r.remind+'мин'}</span>`:''} ${r.recur?`<span class="recur-pill"><i class="fas fa-redo"></i> повтор</span>`:''}</div>${r.note?`<div class="note-pill"><i class="fas fa-sticky-note"></i><span>${r.note}</span></div>`:''}<div class="rec-actions">${r.phone?`<button class="btn-sms" style="background:linear-gradient(135deg,#7B61FF,#9B72CF)" onclick="sendSimpleReminder('${r.id}')"><i class="fas fa-comment-dots"></i> Напомнить</button>`:''} ${r.phone?`<button class="btn-sms" onclick="sendConfirmReminder('${r.id}')"><i class="fas fa-paper-plane"></i> Подтвердить</button>`:''} ${r.phone?`<a href="tel:${r.phone}" class="btn-sms" style="background:linear-gradient(135deg,#6750A4,#9B72CF)"><i class="fas fa-phone"></i></a>`:''}<button class="btn-ed" onclick="openEdit('${r.id}')"><i class="fas fa-pen"></i> Изменить</button><button class="btn-del" onclick="deleteRec('${r.id}','${r.date}')"><i class="fas fa-trash"></i></button></div>`;
     container.appendChild(div);
   });
 }
@@ -838,6 +851,54 @@ window.cycleStatus=function(id,dateStr){
   const next={wait:'done',done:'cancel',cancel:'wait'}[r.status||'wait'];
   updateItem('records',id,{status:next});
   renderDayRecords(dateStr);renderCalendar();updateGlobalTotal();
+};
+
+window.openRecDetail=function(id){
+  const r=getItem('records',id);if(!r)return;
+  const st=r.status||'wait';
+  const SL={wait:'⏳ Ожидает',done:'✅ Пришёл',cancel:'❌ Отменил'};
+  const SLC={wait:'badge-wait',done:'badge-done',cancel:'badge-cancel'};
+  const sa=r.services&&r.services.length?r.services:[{name:r.service||'—',price:r.price}];
+  const confirmed=r.confirmed==='confirm';
+  const el=document.getElementById('rec-detail-content');
+  el.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-size:18px;font-weight:900;color:var(--text)">📋 Запись</div>
+      <button onclick="closeModal('recDetailModal')" style="background:var(--surface2);border:none;color:var(--text-muted);width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+    </div>
+    <div style="background:var(--surface2);border-radius:16px;padding:14px;margin-bottom:12px">
+      <div style="font-size:20px;font-weight:900;color:var(--text);margin-bottom:4px">👤 ${r.name}</div>
+      ${r.phone?`<div style="font-size:13px;color:var(--text-muted)"><i class="fas fa-phone" style="margin-right:5px"></i>${r.phone}</div>`:''}
+    </div>
+    <div style="background:var(--surface2);border-radius:16px;padding:14px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <i class="fas fa-calendar" style="color:var(--primary)"></i>
+        <span style="font-weight:800">${fmtDate(r.date)}</span>
+        ${r.time?`<span style="color:var(--text-muted)">в ${r.time}</span>`:''}
+      </div>
+      ${sa.map(s=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)">
+        <span style="font-weight:700">${s.name}</span>
+        <span style="color:var(--green);font-weight:800">+${Number(s.price||0).toLocaleString()} ₽</span>
+      </div>`).join('')}
+      <div style="display:flex;justify-content:space-between;margin-top:8px">
+        <span style="font-weight:900">Итого</span>
+        <span style="color:var(--green);font-weight:900;font-size:16px">+${r.price.toLocaleString()} ₽</span>
+      </div>
+    </div>
+    ${r.note?`<div style="background:var(--surface2);border-radius:16px;padding:12px;margin-bottom:12px;font-size:13px;color:var(--text-muted)"><i class="fas fa-sticky-note" style="margin-right:6px;color:var(--yellow)"></i>${r.note}</div>`:''}
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <span class="badge ${SLC[st]}" style="cursor:pointer;font-size:13px" onclick="cycleStatus('${id}','${r.date}');openRecDetail('${id}')">${SL[st]} <span style="font-size:10px;opacity:.7">нажми чтобы сменить</span></span>
+      ${confirmed?`<span style="background:var(--green-bg);color:var(--green);padding:5px 10px;border-radius:100px;font-size:12px;font-weight:800">✅ Подтверждено</span>`:''}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      ${r.phone?`<button class="btn-sms" style="background:linear-gradient(135deg,#7B61FF,#9B72CF);justify-content:center" onclick="closeModal('recDetailModal');sendSimpleReminder('${id}')"><i class="fas fa-comment-dots"></i> Напомнить</button>`:''}
+      ${r.phone?`<button class="btn-sms" style="justify-content:center" onclick="closeModal('recDetailModal');sendConfirmReminder('${id}')"><i class="fas fa-paper-plane"></i> Подтвердить</button>`:''}
+      ${r.phone?`<a href="tel:${r.phone}" class="btn-sms" style="background:linear-gradient(135deg,#6750A4,#9B72CF);justify-content:center"><i class="fas fa-phone"></i> Позвонить</a>`:''}
+      <button class="btn-ed" style="justify-content:center" onclick="closeModal('recDetailModal');openEdit('${id}')"><i class="fas fa-pen"></i> Изменить</button>
+    </div>
+    <button class="btn-del" style="width:100%;justify-content:center;margin-top:4px" onclick="closeModal('recDetailModal');deleteRec('${id}','${r.date}')"><i class="fas fa-trash"></i> Удалить запись</button>
+  `;
+  document.getElementById('recDetailModal').classList.add('open');
 };
 window.deleteRec=function(id,date){
   if(!confirm('Удалить запись?'))return;
